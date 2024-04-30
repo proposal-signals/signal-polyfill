@@ -18,16 +18,23 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "prepack": "npm run build",
     "test": "vitest"
   },
   "author": "EisenbergEffect",
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^20.11.25",
+    "@vitest/browser": "^1.5.3",
     "prettier": "^3.2.5",
     "typescript": "latest",
     "vite": "^5.2.6",
     "vite-plugin-dts": "^3.7.3",
-    "vitest": "^1.4.0"
+    "vitest": "^1.4.0",
+    "webdriverio": "^8.36.1"
+  },
+  "volta": {
+    "node": "22.0.0",
+    "pnpm": "9.0.6"
   }
 }
