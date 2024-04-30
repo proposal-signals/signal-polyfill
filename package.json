@@ -30,7 +30,8 @@
     "typescript": "latest",
     "vite": "^5.2.6",
     "vite-plugin-dts": "^3.7.3",
-    "vitest": "^1.4.0"
+    "vitest": "^1.4.0",
+    "webdriverio": "^8.36.1"
   },
   "volta": {
     "node": "22.0.0",
