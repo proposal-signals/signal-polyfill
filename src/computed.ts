@@ -15,6 +15,7 @@ import {
   REACTIVE_NODE,
   ReactiveNode,
   SIGNAL,
+  Version,
 } from './graph.js';
 
 /**
@@ -39,6 +40,8 @@ export interface ComputedNode<T> extends ReactiveNode, ValueEqualityComparer<T> 
    * The computation function which will produce a new value.
    */
   computation: () => T;
+
+  equalCache: Record<number, boolean> | null;
 }
 
 export type ComputedGetter<T> = (() => T) & {
@@ -101,11 +104,35 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
     dirty: true,
     error: null,
     equal: defaultEquals,
+    equalCache: null,
 
     producerMustRecompute(node: ComputedNode<unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the
       // process of being calculated (which should throw an error).
       return node.value === UNSET || node.value === COMPUTING;
+    },
+
+    producerEquals(node: ComputedNode<unknown>, value: unknown, valueVersion: Version) {
+      if (
+        valueVersion + 1 === node.version || // equal is called before the version is incremented
+        value === ERRORED ||
+        node.value === ERRORED ||
+        value === COMPUTING ||
+        node.value === COMPUTING ||
+        value === UNSET ||
+        node.value === UNSET
+      ) {
+        return false;
+      }
+      let res = node.equalCache?.[valueVersion];
+      if (res == null) {
+        res = !!node.equal.call(node.wrapper, value, node.value);
+        if (!node.equalCache) {
+          node.equalCache = {};
+        }
+        node.equalCache[valueVersion] = res;
+      }
+      return res;
     },
 
     producerRecomputeValue(node: ComputedNode<unknown>): void {
