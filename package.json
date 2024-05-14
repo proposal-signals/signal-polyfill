@@ -4,8 +4,7 @@
   "description": "A polyfill for the TC39 Signal proposal.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/proposal-signals/proposal-signals.git",
-    "directory": "packages/signal-polyfill"
+    "url": "https://github.com/proposal-signals/signal-polyfill.git"
   },
   "license": "Apache-2.0",
   "author": "EisenbergEffect",
