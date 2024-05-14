@@ -1,0 +1,17 @@
+{
+  "solution": {
+    "signal-polyfill": {
+      "impact": "patch",
+      "oldVersion": "0.1.0",
+      "newVersion": "0.1.1",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :house: Internal"
+        }
+      ],
+      "pkgJSONPath": "./package.json"
+    }
+  },
+  "description": "## Release (2024-05-14)\n\nsignal-polyfill 0.1.1 (patch)\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#6](https://github.com/proposal-signals/signal-polyfill/pull/6) Fix repo references ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#4](https://github.com/proposal-signals/signal-polyfill/pull/4) Setup release automation ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#1](https://github.com/proposal-signals/signal-polyfill/pull/1) Fix CI ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+}
