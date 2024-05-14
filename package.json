@@ -2,31 +2,32 @@
   "name": "signal-polyfill",
   "version": "0.1.0",
   "description": "A polyfill for the TC39 Signal proposal.",
-  "contributors": [
-    "Google LLC",
-    "Bloomberg Finance L.P.",
-    "EisenbergEffect"
-  ],
-  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/proposal-signals/proposal-signals.git",
     "directory": "packages/signal-polyfill"
   },
+  "license": "Apache-2.0",
+  "author": "EisenbergEffect",
+  "contributors": [
+    "Google LLC",
+    "Bloomberg Finance L.P.",
+    "EisenbergEffect"
+  ],
   "type": "module",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
+    "dev": "vite",
     "prepack": "npm run build",
     "test": "vitest"
   },
-  "author": "EisenbergEffect",
-  "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^20.11.25",
     "@vitest/browser": "^1.5.3",
     "prettier": "^3.2.5",
+    "release-plan": "^0.9.0",
     "typescript": "latest",
     "vite": "^5.2.6",
     "vite-plugin-dts": "^3.7.3",
