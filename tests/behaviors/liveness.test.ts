@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Signal } from "../src/wrapper.js";
+import { Signal } from "../../src/wrapper.js";
 
 describe("liveness", () => {
   it("only changes on first and last descendant", () => {

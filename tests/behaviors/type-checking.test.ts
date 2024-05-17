@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from "../src/wrapper.js";
+import { Signal } from "../../src/wrapper.js";
 
 describe("Expected class shape", () => {
   it("should be on the prototype", () => {

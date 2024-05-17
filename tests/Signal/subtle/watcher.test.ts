@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Signal } from "../src/wrapper.js";
+import { Signal } from "../../../src/wrapper.js";
 
 describe("Watcher", () => {
   type Destructor = () => void;
@@ -61,7 +61,7 @@ describe("Watcher", () => {
       output = stateSignal.get();
       computedOutput = computedSignal.get();
       calls++;
-      return () => {};
+      return () => { };
     });
 
     // The signal is now watched
@@ -142,7 +142,7 @@ describe("Watcher", () => {
     // Adding any other effect after an unwatch should work as expected
     const destructor2 = effect(() => {
       output = stateSignal.get();
-      return () => {};
+      return () => { };
     });
 
     stateSignal.set(300);
@@ -152,7 +152,7 @@ describe("Watcher", () => {
   it("provides `this` to notify as normal function", () => {
     const mockGetPending = vi.fn();
 
-    const watcher = new Signal.subtle.Watcher(function () {
+    const watcher = new Signal.subtle.Watcher(function() {
       this.getPending();
     });
     watcher.getPending = mockGetPending;
