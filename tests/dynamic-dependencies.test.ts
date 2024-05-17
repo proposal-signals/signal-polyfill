@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Dynamic dependencies", () => {
   function run(live) {
@@ -11,7 +11,7 @@ describe("Dynamic dependencies", () => {
       return str;
     });
     if (live) {
-      const w = new Signal.subtle.Watcher(() => { });
+      const w = new Signal.subtle.Watcher(() => {});
       w.watch(computed);
     }
     expect(computed.get()).toBe("abcdefgh");
@@ -34,4 +34,3 @@ describe("Dynamic dependencies", () => {
   it("works live", () => run(true));
   it("works not live", () => run(false));
 });
-

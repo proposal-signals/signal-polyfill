@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("liveness", () => {
   it("only changes on first and last descendant", () => {
@@ -14,8 +14,8 @@ describe("liveness", () => {
     expect(watchedSpy).not.toBeCalled();
     expect(unwatchedSpy).not.toBeCalled();
 
-    const w = new Signal.subtle.Watcher(() => { });
-    const w2 = new Signal.subtle.Watcher(() => { });
+    const w = new Signal.subtle.Watcher(() => {});
+    const w2 = new Signal.subtle.Watcher(() => {});
 
     w.watch(computed);
     expect(watchedSpy).toBeCalledTimes(1);
@@ -47,7 +47,7 @@ describe("liveness", () => {
     expect(watchedSpy).not.toBeCalled();
     expect(unwatchedSpy).not.toBeCalled();
 
-    const w = new Signal.subtle.Watcher(() => { });
+    const w = new Signal.subtle.Watcher(() => {});
     w.watch(c);
     expect(watchedSpy).toBeCalledTimes(1);
     expect(unwatchedSpy).not.toBeCalled();
@@ -57,4 +57,3 @@ describe("liveness", () => {
     expect(unwatchedSpy).toBeCalledTimes(1);
   });
 });
-

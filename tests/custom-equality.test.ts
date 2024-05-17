@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Custom equality", () => {
   it("works for State", () => {
@@ -71,7 +71,7 @@ describe("Custom equality", () => {
     const cutoff = vi.fn((a, b) => Math.abs(a - b) < epsilon.get());
     const innerFn = vi.fn(() => exact.get());
     const inner = new Signal.Computed(innerFn, {
-      equals: cutoff
+      equals: cutoff,
     });
 
     const outerFn = vi.fn(() => {
@@ -88,7 +88,7 @@ describe("Custom equality", () => {
 
     exact.set(2);
     counter.set(2);
-    outer.get()
+    outer.get();
 
     // `outer` reruns because `counter` changed, `inner` reruns when called by
     // `outer`, and `cutoff` is called for the first time.

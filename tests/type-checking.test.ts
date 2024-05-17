@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Expected class shape", () => {
   it("should be on the prototype", () => {
@@ -16,8 +16,8 @@ describe("type checks", () => {
   it("checks types in methods", () => {
     let x = {};
     let s = new Signal.State(1);
-    let c = new Signal.Computed(() => { });
-    let w = new Signal.subtle.Watcher(() => { });
+    let c = new Signal.Computed(() => {});
+    let w = new Signal.subtle.Watcher(() => {});
 
     expect(() => Signal.State.prototype.get.call(x)).toThrowError(TypeError);
     expect(Signal.State.prototype.get.call(s)).toBe(1);
@@ -97,4 +97,3 @@ describe("type checks", () => {
     expect(() => Signal.subtle.introspectSinks(w)).toThrowError(TypeError);
   });
 });
-

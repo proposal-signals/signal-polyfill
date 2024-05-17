@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Receivers", () => {
   it("is this for computed", () => {
     let receiver;
-    const c = new Signal.Computed(function() {
+    const c = new Signal.Computed(function () {
       receiver = this;
     });
     expect(c.get()).toBe(undefined);
@@ -22,7 +22,7 @@ describe("Receivers", () => {
     });
     expect(r1).toBe(undefined);
     expect(r2).toBe(undefined);
-    const w = new Signal.subtle.Watcher(() => { });
+    const w = new Signal.subtle.Watcher(() => {});
     w.watch(s);
     expect(r1).toBe(s);
     expect(r2).toBe(undefined);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Cycles", () => {
   it("detects trivial cycles", () => {
@@ -14,4 +14,3 @@ describe("Cycles", () => {
     expect(() => c3.get()).toThrow();
   });
 });
-

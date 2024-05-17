@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("currentComputed", () => {
   it("works", () => {
@@ -12,4 +12,3 @@ describe("currentComputed", () => {
     expect(c).toBe(context);
   });
 });
-

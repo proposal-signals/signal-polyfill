@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Errors", () => {
   it("are cached by computed signals", () => {
@@ -40,7 +40,7 @@ describe("Errors", () => {
       n++;
       throw s.get();
     });
-    const w = new Signal.subtle.Watcher(() => { });
+    const w = new Signal.subtle.Watcher(() => {});
     w.watch(c);
 
     expect(n).toBe(0);
@@ -59,7 +59,9 @@ describe("Errors", () => {
     const s = new Signal.State(0);
     const cSpy = vi.fn(() => s.get());
     const c = new Signal.Computed(cSpy, {
-      equals() { throw new Error("equals"); },
+      equals() {
+        throw new Error("equals");
+      },
     });
 
     c.get();
@@ -70,5 +72,5 @@ describe("Errors", () => {
     expect(cSpy).toBeCalledTimes(2);
     expect(() => c.get()).toThrowError("equals");
     expect(cSpy).toBeCalledTimes(2);
-  })
+  });
 });

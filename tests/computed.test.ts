@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Computed", () => {
   it("should work", () => {
@@ -71,5 +71,4 @@ describe("Computed", () => {
       expect(calls).toBe(2);
     });
   });
-
 });

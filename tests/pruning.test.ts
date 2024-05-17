@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Pruning", () => {
   it("only recalculates until things are equal", () => {
@@ -38,7 +38,7 @@ describe("Pruning", () => {
     const c2 = new Signal.Computed(() => (n2++, c.get(), 5));
     let n3 = 0;
     const c3 = new Signal.Computed(() => (n3++, c2.get()));
-    const w = new Signal.subtle.Watcher(() => { });
+    const w = new Signal.subtle.Watcher(() => {});
     w.watch(c3);
 
     expect(n).toBe(0);
@@ -65,4 +65,3 @@ describe("Pruning", () => {
     expect(w.getPending().length).toBe(0);
   });
 });
-

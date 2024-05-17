@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Signal } from '../src/wrapper.js';
+import { Signal } from "../src/wrapper.js";
 
 describe("Prohibited contexts", () => {
   it("allows writes during computed", () => {
@@ -37,4 +37,3 @@ describe("Prohibited contexts", () => {
     expect(() => s.set(3)).not.toThrow();
   });
 });
-
