@@ -86,6 +86,7 @@ export function effect(callback) {
   return () => {
     w.unwatch(computed);
     typeof cleanup === "function" && cleanup();
+    cleanup = undefined;
   };
 }
 ```
