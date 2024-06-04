@@ -87,7 +87,7 @@ describe("Detailed Reactive System with Signal", () => {
     logUserStatusChange();
 
     // Check logs
-    console.log(userStatusLogs); // Logs the contents of userStatusLogs
+    expect(userStatusLogs).toEqual(["User status changed: User"]);
 
     // Simulate user becoming an admin
     isAdminSignal.set(true);
@@ -99,7 +99,10 @@ describe("Detailed Reactive System with Signal", () => {
     logUserStatusChange();
 
     // Check logs again
-    console.log(userStatusLogs); // Logs the contents of userStatusLogs
+    expect(userStatusLogs).toEqual([
+      "User status changed: User",
+      "User status changed: Admin",
+    ]);
 
     // Simulate receiving notifications
     notificationCountSignal.set(3);
@@ -108,6 +111,6 @@ describe("Detailed Reactive System with Signal", () => {
     showNotification();
 
     // Check notification logs
-    console.log(notificationLogs); // Logs the contents of notificationLogs
+    expect(notificationLogs).toEqual(["Notification: 3 new notifications"]);
   });
 });
