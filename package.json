@@ -19,7 +19,7 @@
   "scripts": {
     "build": "tsc && vite build",
     "dev": "vite",
-    "prepack": "npm run build",
+    "prepare": "npm run build",
     "lint": "prettier --check .",
     "lint:fix": "prettier --write .",
     "test": "vitest"
