@@ -241,10 +241,22 @@ export function producerAccessed(node: ReactiveNode): void {
 
   activeConsumer.consumerOnSignalRead(node);
 
-  // This producer is the `idx`th dependency of `activeConsumer`.
-  const idx = activeConsumer.nextProducerIndex++;
-
   assertConsumerNode(activeConsumer);
+
+  // This producer is the `idx`th dependency of `activeConsumer`.
+
+  // TODO: maybe a Set should be used for producerNode instead of an array
+  // so that there is no need to loop to avoid duplicates
+  let idx = activeConsumer.nextProducerIndex - 1;
+  while (idx > -1) {
+    if (activeConsumer.producerNode[idx] === node) {
+      break;
+    }
+    idx--;
+  }
+  if (idx === -1) {
+    idx = activeConsumer.nextProducerIndex++;
+  }
 
   if (idx < activeConsumer.producerNode.length && activeConsumer.producerNode[idx] !== node) {
     // There's been a change in producers since the last execution of `activeConsumer`.
