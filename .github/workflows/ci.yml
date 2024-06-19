@@ -26,5 +26,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: wyvox/action-setup-pnpm@v3
       - run: pnpm install --no-lockfile
+      - run: pnpm lint
       - run: pnpm build
       - run: pnpm vitest ${{ matrix.testenv.args }}
