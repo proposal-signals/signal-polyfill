@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../../src/wrapper.js';
 
-describe("watch and unwatch", () => {
-  it("handles multiple watchers well", () => {
+describe('watch and unwatch', () => {
+  it('handles multiple watchers well', () => {
     const s = new Signal.State(1);
     const s2 = new Signal.State(2);
     let n = 0;
@@ -29,7 +29,7 @@ describe("watch and unwatch", () => {
     s.set(2);
     expect(n).toBe(3);
   });
-  it("understands dynamic dependency sets", () => {
+  it('understands dynamic dependency sets', () => {
     let w1 = 0,
       u1 = 0,
       w2 = 0,
@@ -52,7 +52,7 @@ describe("watch and unwatch", () => {
         u2++;
       },
     });
-    let which: { get(): number } = s1;
+    let which: {get(): number} = s1;
     let c = new Signal.Computed(() => (d++, which.get()));
     let w = new Signal.subtle.Watcher(() => n++);
 

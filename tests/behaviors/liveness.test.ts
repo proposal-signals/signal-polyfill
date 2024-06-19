@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it, vi} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("liveness", () => {
-  it("only changes on first and last descendant", () => {
+describe('liveness', () => {
+  it('only changes on first and last descendant', () => {
     const watchedSpy = vi.fn();
     const unwatchedSpy = vi.fn();
     const state = new Signal.State(1, {
@@ -34,7 +34,7 @@ describe("liveness", () => {
     expect(unwatchedSpy).toBeCalledTimes(1);
   });
 
-  it("is tracked well on computed signals", () => {
+  it('is tracked well on computed signals', () => {
     const watchedSpy = vi.fn();
     const unwatchedSpy = vi.fn();
     const s = new Signal.State(1);

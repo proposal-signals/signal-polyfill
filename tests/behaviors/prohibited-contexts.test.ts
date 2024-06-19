@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Prohibited contexts", () => {
-  it("allows writes during computed", () => {
+describe('Prohibited contexts', () => {
+  it('allows writes during computed', () => {
     const s = new Signal.State(1);
     const c = new Signal.Computed(() => (s.set(s.get() + 1), s.get()));
     expect(c.get()).toBe(2);
@@ -18,7 +18,7 @@ describe("Prohibited contexts", () => {
     expect(c.get()).toBe(4);
     expect(s.get()).toBe(4);
   });
-  it("disallows reads and writes during watcher notify", () => {
+  it('disallows reads and writes during watcher notify', () => {
     const s = new Signal.State(1);
     const w = new Signal.subtle.Watcher(() => {
       s.get();

@@ -1,19 +1,19 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Expected class shape", () => {
-  it("should be on the prototype", () => {
-    expect(typeof Signal.State.prototype.get).toBe("function");
-    expect(typeof Signal.State.prototype.set).toBe("function");
-    expect(typeof Signal.Computed.prototype.get).toBe("function");
-    expect(typeof Signal.subtle.Watcher.prototype.watch).toBe("function");
-    expect(typeof Signal.subtle.Watcher.prototype.unwatch).toBe("function");
-    expect(typeof Signal.subtle.Watcher.prototype.getPending).toBe("function");
+describe('Expected class shape', () => {
+  it('should be on the prototype', () => {
+    expect(typeof Signal.State.prototype.get).toBe('function');
+    expect(typeof Signal.State.prototype.set).toBe('function');
+    expect(typeof Signal.Computed.prototype.get).toBe('function');
+    expect(typeof Signal.subtle.Watcher.prototype.watch).toBe('function');
+    expect(typeof Signal.subtle.Watcher.prototype.unwatch).toBe('function');
+    expect(typeof Signal.subtle.Watcher.prototype.getPending).toBe('function');
   });
 });
 
-describe("type checks", () => {
-  it("checks types in methods", () => {
+describe('type checks', () => {
+  it('checks types in methods', () => {
     let x = {};
     let s = new Signal.State(1);
     let c = new Signal.Computed(() => {});
@@ -34,46 +34,22 @@ describe("type checks", () => {
     expect(Signal.Computed.prototype.get.call(c)).toBe(undefined);
     expect(() => Signal.Computed.prototype.get.call(w)).toThrowError(TypeError);
 
-    expect(() => Signal.subtle.Watcher.prototype.watch.call(x, s)).toThrowError(
-      TypeError,
-    );
-    expect(() => Signal.subtle.Watcher.prototype.watch.call(s, s)).toThrowError(
-      TypeError,
-    );
-    expect(() => Signal.subtle.Watcher.prototype.watch.call(c, s)).toThrowError(
-      TypeError,
-    );
+    expect(() => Signal.subtle.Watcher.prototype.watch.call(x, s)).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.watch.call(s, s)).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.watch.call(c, s)).toThrowError(TypeError);
     expect(Signal.subtle.Watcher.prototype.watch.call(w, s)).toBe(undefined);
-    expect(() => Signal.subtle.Watcher.prototype.watch.call(w, w)).toThrowError(
-      TypeError,
-    );
+    expect(() => Signal.subtle.Watcher.prototype.watch.call(w, w)).toThrowError(TypeError);
 
-    expect(() =>
-      Signal.subtle.Watcher.prototype.unwatch.call(x, s),
-    ).toThrowError(TypeError);
-    expect(() =>
-      Signal.subtle.Watcher.prototype.unwatch.call(s, s),
-    ).toThrowError(TypeError);
-    expect(() =>
-      Signal.subtle.Watcher.prototype.unwatch.call(c, s),
-    ).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.unwatch.call(x, s)).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.unwatch.call(s, s)).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.unwatch.call(c, s)).toThrowError(TypeError);
     expect(Signal.subtle.Watcher.prototype.unwatch.call(w, s)).toBe(undefined);
-    expect(() =>
-      Signal.subtle.Watcher.prototype.unwatch.call(w, w),
-    ).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.unwatch.call(w, w)).toThrowError(TypeError);
 
-    expect(() =>
-      Signal.subtle.Watcher.prototype.getPending.call(x, s),
-    ).toThrowError(TypeError);
-    expect(() =>
-      Signal.subtle.Watcher.prototype.getPending.call(s, s),
-    ).toThrowError(TypeError);
-    expect(() =>
-      Signal.subtle.Watcher.prototype.getPending.call(c, s),
-    ).toThrowError(TypeError);
-    expect(Signal.subtle.Watcher.prototype.getPending.call(w, s)).toStrictEqual(
-      [],
-    );
+    expect(() => Signal.subtle.Watcher.prototype.getPending.call(x, s)).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.getPending.call(s, s)).toThrowError(TypeError);
+    expect(() => Signal.subtle.Watcher.prototype.getPending.call(c, s)).toThrowError(TypeError);
+    expect(Signal.subtle.Watcher.prototype.getPending.call(w, s)).toStrictEqual([]);
 
     // @ts-expect-error
     expect(() => Signal.subtle.introspectSources(x)).toThrowError(TypeError);
