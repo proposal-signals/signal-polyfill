@@ -13,6 +13,7 @@ import {
   consumerBeforeComputation,
   consumerMarkClean,
   isInNotificationPhase,
+  producerAccessed,
   producerUpdateValueVersion,
 } from "./graph.js";
 
@@ -36,6 +37,8 @@ export function effectExecute<T>(node: EffectNode<T>): T {
   }
   const prevConsumer = consumerBeforeComputation(node);
   try {
+    node.version++;
+    producerAccessed(node);
     return node.executeEffect();
   } finally {
     consumerAfterComputation(node, prevConsumer);
