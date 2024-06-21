@@ -20,6 +20,7 @@ import {
   createComputed,
   type ComputedNode,
 } from "./computed.js";
+import { EffectNode, createEffectNode, effectExecute, shouldEffectExecute } from "./effect.js";
 import {
 SIGNAL,
 getActiveConsumer,
@@ -43,6 +44,7 @@ const NODE: unique symbol = Symbol("node");
 
 let isState: (s: any) => boolean,
     isComputed: (s: any) => boolean,
+    isEffect: (s: any) => boolean,
     isWatcher: (s: any) => boolean;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -131,10 +133,14 @@ export class Computed<T> {
   }
 }
 
+
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySignal<T = any> = State<T> | Computed<T>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnySink = Computed<any> | subtle.Watcher;
+type AnySink = Computed<any> | subtle.Effect<any> | subtle.Watcher;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Watchable<T = any> = State<T> | Computed<T> | subtle.Effect<T>;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace subtle {
@@ -154,9 +160,9 @@ export namespace subtle {
   // Returns ordered list of all signals which this one referenced
   // during the last time it was evaluated
   export function introspectSources(sink: AnySink): AnySignal[] {
-    if (!isComputed(sink) && !isWatcher(sink)) {
+    if (!isComputed(sink) && !isWatcher(sink) && !isEffect(sink)) {
       throw new TypeError(
-        "Called introspectSources without a Computed or Watcher argument",
+        "Called introspectSources without a Computed or Watcher or Effect argument",
       );
     }
     return sink[NODE].producerNode?.map((n) => n.wrapper) ?? [];
@@ -165,17 +171,17 @@ export namespace subtle {
   // Returns the subset of signal sinks which recursively
   // lead to an Effect which has not been disposed
   // Note: Only watched Computed signals will be in this list.
-  export function introspectSinks(signal: AnySignal): AnySink[] {
-    if (!isComputed(signal) && !isState(signal)) {
-      throw new TypeError("Called introspectSinks without a Signal argument");
+  export function introspectSinks(signal: Watchable): AnySink[] {
+    if (!isComputed(signal) && !isState(signal) && !isEffect(signal)) {
+      throw new TypeError("Called introspectSinks without a Signal or Effect argument");
     }
     return signal[NODE].liveConsumerNode?.map((n) => n.wrapper) ?? [];
   }
 
   // True iff introspectSinks() is non-empty
-  export function hasSinks(signal: AnySignal): boolean {
-    if (!isComputed(signal) && !isState(signal)) {
-      throw new TypeError("Called hasSinks without a Signal argument");
+  export function hasSinks(signal: Watchable): boolean {
+    if (!isComputed(signal) && !isState(signal) && !isEffect(signal)) {
+      throw new TypeError("Called hasSinks without a Signal or Effect argument");
     }
     const liveConsumerNode = signal[NODE].liveConsumerNode;
     if (!liveConsumerNode) return false;
@@ -184,12 +190,50 @@ export namespace subtle {
 
   // True iff introspectSources() is non-empty
   export function hasSources(signal: AnySink): boolean {
-    if (!isComputed(signal) && !isWatcher(signal)) {
-      throw new TypeError("Called hasSources without a Computed or Watcher argument");
+    if (!isComputed(signal) && !isWatcher(signal) && !isEffect(signal)) {
+      throw new TypeError("Called hasSources without a Computed or Watcher or Effect argument");
     }
     const producerNode = signal[NODE].producerNode;
     if (!producerNode) return false;
     return producerNode.length > 0;
+  } 
+  
+  // A function which performs side effects in response to changes in Signals
+  export class Effect<T> {
+    readonly [NODE]: EffectNode<T>;
+
+    #brand() {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static {
+      isEffect = (c: any) => #brand in c;
+    }
+
+    // Create an Effect which evaluates some code in a reactive context.
+    constructor(executeEffect: () => T) {
+      const node = createEffectNode<T>(executeEffect);
+      node.consumerAllowSignalWrites = true;
+      this[NODE] = node;
+      node.wrapper = this;
+    }
+
+    // Execute the effect, and return its result
+    execute(): T {
+      if (!isEffect(this))
+        throw new TypeError(
+          "Wrong receiver type for Signal.subtle.Effect.prototype.execute"
+        );
+      return effectExecute(this[NODE]);
+    }
+
+    // Returns true if the effect has never been run before, or if any of its
+    // sources have changed since the last time it was run.
+    shouldExecute(): boolean {
+      if (!isEffect(this))
+        throw new TypeError(
+          "Wrong receiver type for Signal.subtle.Effect.prototype.shouldExecute"
+        );
+      return shouldEffectExecute(this[NODE]);
+    }
   }
 
   export class Watcher {
@@ -213,9 +257,9 @@ export namespace subtle {
       this[NODE] = node;
     }
 
-    #assertSignals(signals: AnySignal[]): void {
-      for (const signal of signals) {
-        if (!isComputed(signal) && !isState(signal)) {
+    #assertWatchable(items: Watchable[]): void {
+      for (const item of items) {
+        if (!isComputed(item) && !isState(item) && !isEffect(item)) {
           throw new TypeError(
             "Called watch/unwatch without a Computed or State argument",
           );
@@ -227,34 +271,34 @@ export namespace subtle {
     // notify callback next time any signal in the set (or one of its dependencies) changes.
     // Can be called with no arguments just to reset the "notified" state, so that
     // the notify callback will be invoked again.
-    watch(...signals: AnySignal[]): void {
+    watch(...items: Watchable[]): void {
       if (!isWatcher(this)) {
         throw new TypeError("Called unwatch without Watcher receiver");
       }
-      this.#assertSignals(signals);
+      this.#assertWatchable(items);
 
       const node = this[NODE];
       node.dirty = false;  // Give the watcher a chance to trigger again
       const prev = setActiveConsumer(node);
-      for (const signal of signals) {
+      for (const signal of items) {
         producerAccessed(signal[NODE]);
       }
       setActiveConsumer(prev);
     }
 
     // Remove these signals from the watched set (e.g., for an effect which is disposed)
-    unwatch(...signals: AnySignal[]): void {
+    unwatch(...items: Watchable[]): void {
       if (!isWatcher(this)) {
         throw new TypeError("Called unwatch without Watcher receiver");
       }
-      this.#assertSignals(signals);
+      this.#assertWatchable(items);
 
       const node = this[NODE];
       assertConsumerNode(node);
 
       let indicesToShift = [];
       for (let i = 0; i < node.producerNode.length; i++) {
-          if (signals.includes(node.producerNode[i].wrapper)) {
+          if (items.includes(node.producerNode[i].wrapper)) {
             producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
             indicesToShift.push(i);
           }
