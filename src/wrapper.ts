@@ -280,10 +280,14 @@ export namespace subtle {
       const node = this[NODE];
       node.dirty = false;  // Give the watcher a chance to trigger again
       const prev = setActiveConsumer(node);
-      for (const signal of items) {
-        producerAccessed(signal[NODE]);
+      try {
+        // producerAccessed will throw if called during the notify phase
+        for (const signal of items) {
+          producerAccessed(signal[NODE]);
+        }
+      } finally {
+        setActiveConsumer(prev);
       }
-      setActiveConsumer(prev);
     }
 
     // Remove these signals from the watched set (e.g., for an effect which is disposed)
