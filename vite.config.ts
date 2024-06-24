@@ -8,6 +8,7 @@ const entry = join(dirname(fileURLToPath(import.meta.url)), './src/index.ts');
 export default defineConfig({
   plugins: [dts()],
   build: {
+    minify: false,
     lib: {
       entry,
       formats: ["es"],
