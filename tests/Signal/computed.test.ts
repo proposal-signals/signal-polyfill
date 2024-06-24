@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Computed", () => {
-  it("should work", () => {
+describe('Computed', () => {
+  it('should work', () => {
     const stateSignal = new Signal.State(1);
 
     const computedSignal = new Signal.Computed(() => {
@@ -18,8 +18,8 @@ describe("Computed", () => {
     expect(computedSignal.get()).toEqual(10);
   });
 
-  describe("Comparison semantics", () => {
-    it("should track Computed by Object.is", () => {
+  describe('Comparison semantics', () => {
+    it('should track Computed by Object.is', () => {
       const state = new Signal.State(1);
       let value = 5;
       let calls = 0;
@@ -43,7 +43,7 @@ describe("Computed", () => {
       expect(calls).toBe(2);
     });
 
-    it("applies custom equality in Computed", () => {
+    it('applies custom equality in Computed', () => {
       const s = new Signal.State(5);
       let ecalls = 0;
       const c1 = new Signal.Computed(() => (s.get(), 1), {

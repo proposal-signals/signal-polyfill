@@ -20,6 +20,8 @@
     "build": "tsc && vite build",
     "dev": "vite",
     "prepack": "npm run build",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write .",
     "test": "vitest"
   },
   "devDependencies": {

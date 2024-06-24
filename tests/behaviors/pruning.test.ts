@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Pruning", () => {
-  it("only recalculates until things are equal", () => {
+describe('Pruning', () => {
+  it('only recalculates until things are equal', () => {
     const s = new Signal.State(0);
     let n = 0;
     const c = new Signal.Computed(() => (n++, s.get()));
@@ -30,7 +30,7 @@ describe("Pruning", () => {
     expect(n2).toBe(2);
     expect(n3).toBe(1);
   });
-  it("does similar pruning for live signals", () => {
+  it('does similar pruning for live signals', () => {
     const s = new Signal.State(0);
     let n = 0;
     const c = new Signal.Computed(() => (n++, s.get()));

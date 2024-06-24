@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check-plan:
-    name: "Check Release Plan"
+    name: 'Check Release Plan'
     runs-on: ubuntu-latest
     outputs:
       command: ${{ steps.check-release.outputs.command }}
@@ -52,14 +52,14 @@ jobs:
           ref: 'main'
       - uses: wyvox/action-setup-pnpm@v3
       - run: pnpm install --frozen-lockfile
-      
-      - name: "Generate Explanation and Prep Changelogs"
+
+      - name: 'Generate Explanation and Prep Changelogs'
         id: explanation
         run: |
           set +e
-          
+
           pnpm release-plan prepare 2> >(tee -a release-plan-stderr.txt >&2)
-          
+
 
           if [ $? -ne 0 ]; then
             echo 'text<<EOF' >> $GITHUB_OUTPUT
@@ -77,7 +77,7 @@ jobs:
       - uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Prepare Release using 'release-plan'"
-          labels: "internal"
+          labels: 'internal'
           branch: release-preview
           title: Prepare Release
           body: |

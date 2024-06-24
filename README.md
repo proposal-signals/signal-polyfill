@@ -1,6 +1,6 @@
 # Signal Polyfill
 
-## ⚠️  This polyfill is a preview of an in-progress proposal and could change at any time. Do not use this in production. ⚠️
+## ⚠️ This polyfill is a preview of an in-progress proposal and could change at any time. Do not use this in production. ⚠️
 
 A "signal" is [a proposed first-class JavaScript data type](https://github.com/tc39/proposal-signals) that enables one-way data flow through cells of state or computations derived from other state/computations.
 
@@ -10,8 +10,8 @@ This is a polyfill for the `Signal` API.
 
 ### Using signals
 
-* Use `Signal.State(value)` to create a single "cell" of data that can flow through the unidirectional state graph.
-* Use `Signal.Computed(callback)` to define a computation based on state or other computations flowing through the graph.
+- Use `Signal.State(value)` to create a single "cell" of data that can flow through the unidirectional state graph.
+- Use `Signal.Computed(callback)` to define a computation based on state or other computations flowing through the graph.
 
 ```js
 import { Signal } from "signal-polyfill";
@@ -19,7 +19,7 @@ import { effect } from "./effect.js";
 
 const counter = new Signal.State(0);
 const isEven = new Signal.Computed(() => (counter.get() & 1) == 0);
-const parity = new Signal.Computed(() => isEven.get() ? "even" : "odd");
+const parity = new Signal.Computed(() => (isEven.get() ? "even" : "odd"));
 
 effect(() => console.log(parity.get())); // Console logs "even" immediately.
 setInterval(() => counter.set(counter.get() + 1), 1000); // Changes the counter every 1000ms.
@@ -44,11 +44,11 @@ Depending on how the effect is implemented, the above code could result in an in
 
 ### Creating a simple effect
 
-* You can use `Signal.subtle.Watch(callback)` combined with `Signal.Computed(callback)` to create a simple _effect_ implementation.
-* The `Signal.subtle.Watch` `callback` is invoked synchronously when a watched signal becomes dirty.
-* To batch effect updates, library authors are expected to implement their own schedulers.
-* Use `Signal.subtle.Watch#getPending()` to retrieve an array of dirty signals.
-* Calling `Signal.subtle.Watch#watch()` with no arguments will re-watch the list of tracked signals again.
+- You can use `Signal.subtle.Watch(callback)` combined with `Signal.Computed(callback)` to create a simple _effect_ implementation.
+- The `Signal.subtle.Watch` `callback` is invoked synchronously when a watched signal becomes dirty.
+- To batch effect updates, library authors are expected to implement their own schedulers.
+- Use `Signal.subtle.Watch#getPending()` to retrieve an array of dirty signals.
+- Calling `Signal.subtle.Watch#watch()` with no arguments will re-watch the list of tracked signals again.
 
 ```js
 import { Signal } from "signal-polyfill";
@@ -64,7 +64,7 @@ const w = new Signal.subtle.Watcher(() => {
 
 function processPending() {
   needsEnqueue = true;
-    
+
   for (const s of w.getPending()) {
     s.get();
   }
@@ -74,15 +74,15 @@ function processPending() {
 
 export function effect(callback) {
   let cleanup;
-  
+
   const computed = new Signal.Computed(() => {
     typeof cleanup === "function" && cleanup();
     cleanup = callback();
   });
-  
+
   w.watch(computed);
   computed.get();
-  
+
   return () => {
     w.unwatch(computed);
     typeof cleanup === "function" && cleanup();
@@ -112,7 +112,7 @@ export function signal(target) {
     set(value) {
       get.call(this).set(value);
     },
-    
+
     init(value) {
       return new Signal.State(value);
     },

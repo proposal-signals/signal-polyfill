@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Receivers", () => {
-  it("is this for computed", () => {
+describe('Receivers', () => {
+  it('is this for computed', () => {
     let receiver;
     const c = new Signal.Computed(function () {
       receiver = this;
@@ -10,7 +10,7 @@ describe("Receivers", () => {
     expect(c.get()).toBe(undefined);
     expect(receiver).toBe(c);
   });
-  it("is this for watched/unwatched", () => {
+  it('is this for watched/unwatched', () => {
     let r1, r2;
     const s = new Signal.State(1, {
       [Signal.subtle.watched]() {
@@ -29,7 +29,7 @@ describe("Receivers", () => {
     w.unwatch(s);
     expect(r2).toBe(s);
   });
-  it("is this for equals", () => {
+  it('is this for equals', () => {
     let receiver;
     const options = {
       equals() {

@@ -7,8 +7,15 @@
  */
 
 import {defaultEquals, ValueEqualityFn} from './equality.js';
-import {consumerAfterComputation, consumerBeforeComputation, producerAccessed, producerUpdateValueVersion, REACTIVE_NODE, ReactiveNode, SIGNAL} from './graph.js';
-
+import {
+  consumerAfterComputation,
+  consumerBeforeComputation,
+  producerAccessed,
+  producerUpdateValueVersion,
+  REACTIVE_NODE,
+  ReactiveNode,
+  SIGNAL,
+} from './graph.js';
 
 /**
  * A computation, which derives a value from a declarative reactive expression.
@@ -36,7 +43,7 @@ export interface ComputedNode<T> extends ReactiveNode {
   equal: ValueEqualityFn<T>;
 }
 
-export type ComputedGetter<T> = (() => T)&{
+export type ComputedGetter<T> = (() => T) & {
   [SIGNAL]: ComputedNode<T>;
 };
 

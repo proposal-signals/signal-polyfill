@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it, vi} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Custom equality", () => {
-  it("works for State", () => {
+describe('Custom equality', () => {
+  it('works for State', () => {
     let answer = true;
     const s = new Signal.State(1, {
       equals() {
@@ -31,7 +31,7 @@ describe("Custom equality", () => {
     expect(c.get()).toBe(2);
     expect(n).toBe(3);
   });
-  it("works for Computed", () => {
+  it('works for Computed', () => {
     let answer = true;
     let value = 1;
     const u = new Signal.State(1);
@@ -63,7 +63,7 @@ describe("Custom equality", () => {
     expect(c.get()).toBe(2);
     expect(n).toBe(3);
   });
-  it("does not leak tracking information", () => {
+  it('does not leak tracking information', () => {
     const exact = new Signal.State(1);
     const epsilon = new Signal.State(0.1);
     const counter = new Signal.State(1);
