@@ -1,0 +1,10 @@
+(node:1896) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+# Unlabeled Changes
+
+* `signal-polyfill`
+  * [#20](https://github.com/proposal-signals/signal-polyfill/pull/20) Set up prettier ([@ds300](https://github.com/ds300))
+  * [#21](https://github.com/proposal-signals/signal-polyfill/pull/21) Turn off minify for release bundle ([@ds300](https://github.com/ds300))
+
+
+*Cannot plan release until the above changes are labeled*.
