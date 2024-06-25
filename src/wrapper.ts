@@ -47,7 +47,7 @@ export namespace Signal {
 
     constructor(initialValue: T, options: Signal.Options<T> = {}) {
       const ref = createSignal<T>(initialValue);
-      const node: SignalNode<T> = ref[SIGNAL];
+      const node: any = ref[SIGNAL]; // Type assertion to 'any'
       this[NODE] = node;
       node.wrapper = this;
       if (options) {
@@ -89,7 +89,7 @@ export namespace Signal {
     // Callback is called with this signal as the parameter.
     constructor(computation: () => T, options?: Signal.Options<T>) {
       const ref = createComputed<T>(computation);
-      const node = ref[SIGNAL];
+      const node: any = ref[SIGNAL]; // Type assertion to 'any'
       node.consumerAllowSignalWrites = true;
       this[NODE] = node;
       node.wrapper = this;
@@ -111,9 +111,9 @@ export namespace Signal {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type AnySignal<T = any> = State<T> | Computed<T>;
+  type AnySignal<T = number> = State<T> | Computed<T>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type AnySink = Computed<any> | subtle.Watcher;
+  type AnySink = Computed<number> | subtle.Watcher;
 
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace subtle {
@@ -136,7 +136,7 @@ export namespace Signal {
       if (!isComputed(sink) && !isWatcher(sink)) {
         throw new TypeError('Called introspectSources without a Computed or Watcher argument');
       }
-      return sink[NODE].producerNode?.map((n) => n.wrapper) ?? [];
+      return (sink[NODE].producerNode || []).map((n: any) => n.wrapper || null);
     }
 
     // Returns the subset of signal sinks which recursively
@@ -146,7 +146,7 @@ export namespace Signal {
       if (!isComputed(signal) && !isState(signal)) {
         throw new TypeError('Called introspectSinks without a Signal argument');
       }
-      return signal[NODE].liveConsumerNode?.map((n) => n.wrapper) ?? [];
+      return signal[NODE].liveConsumerNode?.map((n: any) => n.wrapper) ?? [];
     }
 
     // True iff introspectSinks() is non-empty
@@ -228,12 +228,31 @@ export namespace Signal {
         assertConsumerNode(node);
 
         let indicesToShift = [];
+        interface ReactiveNode {
+          wrapper?: any; // Type adjusting, according to data type
+          liveConsumerNode?: {
+            wrapper?: any;
+          };
+        }
+
+        function isReactiveNode(node: any): node is ReactiveNode {
+          return node !== undefined && 'liveConsumerNode' in node && 'wrapper' in node;
+        }
+
         for (let i = 0; i < node.producerNode.length; i++) {
-          if (signals.includes(node.producerNode[i].wrapper)) {
-            producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
+          const producerNode = node.producerNode[i];
+          if (
+            isReactiveNode(producerNode) &&
+            producerNode.liveConsumerNode &&
+            producerNode.liveConsumerNode.wrapper &&
+            producerNode.wrapper !== undefined && // Check if wrapper is defined
+            signals.includes(producerNode.wrapper)
+          ) {
+            producerRemoveLiveConsumerAtIndex(producerNode, node.producerIndexOfThis[i]);
             indicesToShift.push(i);
           }
         }
+
         for (const idx of indicesToShift) {
           // Logic copied from producerRemoveLiveConsumerAtIndex, but reversed
           const lastIdx = node.producerNode!.length - 1;
@@ -255,17 +274,25 @@ export namespace Signal {
 
       // Returns the set of computeds in the Watcher's set which are still yet
       // to be re-evaluated
-      getPending(): Computed<any>[] {
+      getPending(): Computed<number>[] {
         if (!isWatcher(this)) {
           throw new TypeError('Called getPending without Watcher receiver');
         }
         const node = this[NODE];
-        return node.producerNode!.filter((n) => n.dirty).map((n) => n.wrapper);
+        return node.producerNode!.filter((n) => n.dirty).map((n: any) => n.wrapper);
       }
     }
 
-    export function currentComputed(): Computed<any> | undefined {
-      return getActiveConsumer()?.wrapper;
+    export function currentComputed(): Computed<number> | undefined {
+      const activeConsumer = getActiveConsumer();
+      if (
+        activeConsumer &&
+        'wrapper' in activeConsumer &&
+        isComputed(activeConsumer.wrapper as Computed<number>)
+      ) {
+        return activeConsumer.wrapper as Computed<number>;
+      }
+      return undefined;
     }
 
     // Hooks to observe being watched or no longer watched
