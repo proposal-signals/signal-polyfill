@@ -228,12 +228,30 @@ export namespace Signal {
         assertConsumerNode(node);
 
         let indicesToShift = [];
-        for (let i = 0; i < node.producerNode.length; i++) {
-          if (signals.includes(node.producerNode[i].wrapper)) {
-            producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
-            indicesToShift.push(i);
-          }
-        }
+       interface ReactiveNode {
+         wrapper?: any; // Type adjusting, according to data type
+         liveConsumerNode?: {
+           wrapper?: any;
+         };
+       }
+
+       function isReactiveNode(node: any): node is ReactiveNode {
+         return node !== undefined && 'liveConsumerNode' in node && 'wrapper' in node;
+       }
+
+       for (let i = 0; i < node.producerNode.length; i++) {
+         const producerNode = node.producerNode[i];
+         if (
+           isReactiveNode(producerNode) &&
+           producerNode.liveConsumerNode &&
+           producerNode.liveConsumerNode.wrapper &&
+           producerNode.wrapper !== undefined && // Check if wrapper is defined
+           signals.includes(producerNode.wrapper)
+         ) {
+           producerRemoveLiveConsumerAtIndex(producerNode, node.producerIndexOfThis[i]);
+           indicesToShift.push(i);
+         }
+       }
         for (const idx of indicesToShift) {
           // Logic copied from producerRemoveLiveConsumerAtIndex, but reversed
           const lastIdx = node.producerNode!.length - 1;
