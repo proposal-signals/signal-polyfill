@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {Signal} from '../../../src/wrapper.js';
 
 describe('watch and unwatch', () => {
@@ -159,5 +159,35 @@ describe('watch and unwatch', () => {
     expect(Signal.subtle.hasSinks(s2)).toBe(false);
     expect(w.getPending()).toStrictEqual([]);
     expect(d).toBe(4);
+  });
+  it('can unwatch multiple signals', async () => {
+    const signals = [...Array(7)].map((_, i) => new Signal.State(i));
+    const notify = vi.fn();
+    const watcher = new Signal.subtle.Watcher(notify);
+    const expectSources = (expected: typeof signals) => {
+      const sources = Signal.subtle.introspectSources(watcher) as typeof signals;
+      sources.sort((a, b) => signals.indexOf(a) - signals.indexOf(b));
+      expected.sort((a, b) => signals.indexOf(a) - signals.indexOf(b));
+      return expect(sources).toEqual(expected);
+    };
+
+    watcher.watch(...signals);
+    expectSources(signals);
+
+    const unwatched = [0, 3, 4, 6].map((i) => signals[i]);
+    const watched = signals.filter((s) => !unwatched.includes(s));
+
+    watcher.unwatch(...unwatched);
+    expectSources(watched);
+
+    let expectedNotifyCalls = 0;
+    for (const signal of signals) {
+      signal.set(signal.get() + 1);
+      if (watched.includes(signal)) ++expectedNotifyCalls;
+
+      expect(notify).toHaveBeenCalledTimes(expectedNotifyCalls);
+
+      watcher.watch();
+    }
   });
 });
