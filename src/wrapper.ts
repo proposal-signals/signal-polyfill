@@ -227,28 +227,25 @@ export namespace Signal {
         const node = this[NODE];
         assertConsumerNode(node);
 
-        let indicesToShift = [];
-        for (let i = 0; i < node.producerNode.length; i++) {
+        for (let i = node.producerNode.length - 1; i >= 0; i--) {
           if (signals.includes(node.producerNode[i].wrapper)) {
             producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
-            indicesToShift.push(i);
-          }
-        }
-        for (const idx of indicesToShift) {
-          // Logic copied from producerRemoveLiveConsumerAtIndex, but reversed
-          const lastIdx = node.producerNode!.length - 1;
-          node.producerNode![idx] = node.producerNode![lastIdx];
-          node.producerIndexOfThis[idx] = node.producerIndexOfThis[lastIdx];
 
-          node.producerNode.length--;
-          node.producerIndexOfThis.length--;
-          node.nextProducerIndex--;
+            // Logic copied from producerRemoveLiveConsumerAtIndex, but reversed
+            const lastIdx = node.producerNode!.length - 1;
+            node.producerNode![i] = node.producerNode![lastIdx];
+            node.producerIndexOfThis[i] = node.producerIndexOfThis[lastIdx];
 
-          if (idx < node.producerNode.length) {
-            const idxConsumer = node.producerIndexOfThis[idx];
-            const producer = node.producerNode[idx];
-            assertProducerNode(producer);
-            producer.liveConsumerIndexOfThis[idxConsumer] = idx;
+            node.producerNode.length--;
+            node.producerIndexOfThis.length--;
+            node.nextProducerIndex--;
+
+            if (i < node.producerNode.length) {
+              const idxConsumer = node.producerIndexOfThis[i];
+              const producer = node.producerNode[i];
+              assertProducerNode(producer);
+              producer.liveConsumerIndexOfThis[idxConsumer] = i;
+            }
           }
         }
       }
