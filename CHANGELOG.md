@@ -1,5 +1,29 @@
 # Changelog
 
+## Release (2024-07-23)
+
+signal-polyfill 0.1.2 (patch)
+
+#### :bug: Bug Fix
+* `signal-polyfill`
+  * [#26](https://github.com/proposal-signals/signal-polyfill/pull/26) Fix unwatch multiple signals ([@tuhm1](https://github.com/tuhm1))
+  * [#21](https://github.com/proposal-signals/signal-polyfill/pull/21) Turn off minify for release bundle ([@ds300](https://github.com/ds300))
+
+#### :memo: Documentation
+* `signal-polyfill`
+  * [#13](https://github.com/proposal-signals/signal-polyfill/pull/13) improve effects example slightly ([@benlesh](https://github.com/benlesh))
+
+#### :house: Internal
+* `signal-polyfill`
+  * [#20](https://github.com/proposal-signals/signal-polyfill/pull/20) Set up prettier ([@ds300](https://github.com/ds300))
+  * [#11](https://github.com/proposal-signals/signal-polyfill/pull/11) Reorganize and split tests ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 4
+- Ben Lesh ([@benlesh](https://github.com/benlesh))
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+- [@tuhm1](https://github.com/tuhm1)
+
 ## Release (2024-05-14)
 
 signal-polyfill 0.1.1 (patch)
