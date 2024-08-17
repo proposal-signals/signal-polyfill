@@ -33,6 +33,9 @@ jspm_packages
 # Optional npm cache directory
 .npm
 
+# Optional direnv cache directory
+.direnv
+
 # Optional REPL history
 .node_repl_history
 
