@@ -29,10 +29,14 @@ import {
   producerRemoveLiveConsumerAtIndex,
 } from './graph.js';
 import {createSignal, signalGetFn, signalSetFn, type SignalNode} from './signal.js';
+import {createVolatile, volatileGetFn, type VolatileNode} from './volatile';
 
 const NODE: unique symbol = Symbol('node');
 
-let isState: (s: any) => boolean, isComputed: (s: any) => boolean, isWatcher: (s: any) => boolean;
+let isState: (s: any) => boolean,
+  isVolatile: (s: any) => boolean,
+  isComputed: (s: any) => boolean,
+  isWatcher: (s: any) => boolean;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Signal {
@@ -107,6 +111,30 @@ export namespace Signal {
       if (!isComputed(this))
         throw new TypeError('Wrong receiver type for Signal.Computed.prototype.get');
       return computedGet(this[NODE]);
+    }
+  }
+
+  export class Volatile<T> {
+    readonly [NODE]: VolatileNode<T>;
+
+    #brand() {}
+
+    static {
+      isVolatile = (v: any): v is Volatile<any> => #brand in v;
+    }
+
+    constructor(getSnapshot: () => T, _options?: Signal.Options<T>) {
+      const node = createVolatile(getSnapshot);
+      this[NODE] = node;
+
+      // TODO: Implement subscribe.
+    }
+
+    get(): T {
+      if (!isVolatile(this))
+        throw new TypeError('Wrong receiver type for Signal.Volatile.prototype.get');
+
+      return (volatileGetFn<T>).call(this[NODE]);
     }
   }
 
