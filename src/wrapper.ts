@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import {computedGet, createComputed, type ComputedNode} from './computed.js';
+import {computedGet, createComputed, markToRecompute, type ComputedNode} from './computed.js';
 import {
   SIGNAL,
   getActiveConsumer,
@@ -107,6 +107,41 @@ export namespace Signal {
       if (!isComputed(this))
         throw new TypeError('Wrong receiver type for Signal.Computed.prototype.get');
       return computedGet(this[NODE]);
+    }
+  }
+
+  export class Volatile<T> extends Computed<T> {
+    #subscribe: VolatileOptions<T>['subscribe'];
+    #watchedCb: (() => void) | undefined;
+    #unwatchedCb: (() => void) | undefined;
+    #unsubscribe: ReturnType<NonNullable<VolatileOptions<T>['subscribe']>> | undefined;
+
+    constructor(computation: () => T, options?: Signal.VolatileOptions<T>) {
+      const {
+        subscribe,
+        [subtle.watched]: watchedCb,
+        [subtle.unwatched]: unwatchedCb,
+        ...computedOptions
+      } = options ?? {};
+      super(computation, computedOptions);
+      this.#watchedCb = watchedCb;
+      this.#unwatchedCb = unwatchedCb;
+      this.#subscribe = subscribe;
+      const node = this[NODE];
+      node.volatile = 1;
+      node.watched = this.#watched;
+      node.unwatched = this.#unwatched;
+    }
+    #watched() {
+      markToRecompute(this[NODE]);
+      this.#unsubscribe = this.#subscribe?.call(this, () => markToRecompute(this[NODE]));
+      this.#watchedCb?.call(this);
+    }
+    #unwatched() {
+      const unsubscribe = this.#unsubscribe;
+      this.#unsubscribe = undefined;
+      unsubscribe?.call(this);
+      this.#unwatchedCb?.call(this);
     }
   }
 
@@ -280,5 +315,9 @@ export namespace Signal {
 
     // Callback called whenever hasSinks becomes false, if it was previously true
     [Signal.subtle.unwatched]?: (this: AnySignal<T>) => void;
+  }
+
+  export interface VolatileOptions<T> extends Options<T> {
+    subscribe?: (this: Volatile<T>, onchange: () => void) => void | ((this: Volatile<T>) => void);
   }
 }

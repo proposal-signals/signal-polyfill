@@ -10,6 +10,7 @@ import {defaultEquals, ValueEqualityFn} from './equality.js';
 import {
   consumerAfterComputation,
   consumerBeforeComputation,
+  consumerMarkDirty,
   producerAccessed,
   producerUpdateValueVersion,
   REACTIVE_NODE,
@@ -40,12 +41,23 @@ export interface ComputedNode<T> extends ReactiveNode {
    */
   computation: () => T;
 
+  /**
+   * Whether markToRecompute was called on this node.
+   */
+  markedToRecompute: boolean;
+
   equal: ValueEqualityFn<T>;
 }
 
 export type ComputedGetter<T> = (() => T) & {
   [SIGNAL]: ComputedNode<T>;
 };
+
+export function markToRecompute<T>(node: ComputedNode<T>) {
+  node.dirty = true;
+  node.markedToRecompute = true;
+  consumerMarkDirty(node);
+}
 
 export function computedGet<T>(node: ComputedNode<T>) {
   // Check if the value needs updating before returning it.
@@ -107,7 +119,7 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
     producerMustRecompute(node: ComputedNode<unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the
       // process of being calculated (which should throw an error).
-      return node.value === UNSET || node.value === COMPUTING;
+      return node.value === UNSET || node.value === COMPUTING || node.markedToRecompute;
     },
 
     producerRecomputeValue(node: ComputedNode<unknown>): void {
@@ -118,6 +130,7 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
 
       const oldValue = node.value;
       node.value = COMPUTING;
+      node.markedToRecompute = false;
 
       const prevConsumer = consumerBeforeComputation(node);
       let newValue: unknown;
