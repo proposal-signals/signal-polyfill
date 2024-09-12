@@ -173,4 +173,47 @@ describe('Signal.Volatile', () => {
     expect(volatile.get()).toBe('updated');
     expect(getSnapshot).toHaveBeenCalledTimes(2);
   });
+
+  it('is cached only when live', () => {
+    let count = 0;
+    let onChange: () => void;
+    const unsubscribe = vi.fn();
+    const subscribe = vi.fn((notify) => {
+      onChange = notify;
+      return unsubscribe;
+    });
+    const volatile = new Signal.Volatile(() => count++, {
+      subscribe,
+    });
+    const dep1 = new Signal.Computed(() => volatile.get());
+    const dep2 = new Signal.Computed(() => volatile.get());
+    const result = new Signal.Computed(
+      () => `${dep1.get()},${dep1.get()},${dep2.get()},${dep2.get()}`,
+    );
+    expect(result.get()).toBe('0,1,2,3');
+    expect(result.get()).toBe('4,5,6,7');
+    const listener = vi.fn();
+    const watcher = new Signal.subtle.Watcher(listener);
+    expect(subscribe).not.toHaveBeenCalled();
+    watcher.watch(result);
+    expect(subscribe).toHaveBeenCalledTimes(1);
+    subscribe.mockClear();
+    expect(result.get()).toBe('8,8,8,8');
+    expect(listener).not.toHaveBeenCalled();
+    onChange!();
+    expect(listener).toHaveBeenCalledTimes(1);
+    listener.mockClear();
+    expect(result.get()).toBe('9,9,9,9');
+    expect(unsubscribe).not.toHaveBeenCalled();
+    watcher.unwatch(result);
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+    unsubscribe.mockClear();
+    expect(result.get()).toBe('10,11,12,13');
+    expect(result.get()).toBe('14,15,16,17');
+
+    // check that our listeners were not called again:
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(unsubscribe).not.toHaveBeenCalled();
+    expect(listener).not.toHaveBeenCalled();
+  });
 });
