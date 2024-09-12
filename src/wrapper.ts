@@ -15,20 +15,14 @@
  * limitations under the License.
  */
 
-import {computedGet, createComputed, type ComputedNode} from './computed.js';
 import {
-  SIGNAL,
+  ComputedNode,
+  untrack as graphUntrack,
   getActiveConsumer,
   isInNotificationPhase,
-  producerAccessed,
-  assertConsumerNode,
-  setActiveConsumer,
-  REACTIVE_NODE,
-  type ReactiveNode,
-  assertProducerNode,
-  producerRemoveLiveConsumerAtIndex,
-} from './graph.js';
-import {createSignal, signalGetFn, signalSetFn, type SignalNode} from './signal.js';
+  SignalNode,
+  WatcherNode,
+} from './graph';
 
 const NODE: unique symbol = Symbol('node');
 
@@ -48,23 +42,22 @@ export namespace Signal {
     }
 
     constructor(initialValue: T, options: Signal.Options<T> = {}) {
-      const ref = createSignal<T>(initialValue);
-      const node: SignalNode<T> = ref[SIGNAL];
+      const node = new SignalNode<T>(initialValue);
       this[NODE] = node;
       node.wrapper = this;
       if (options) {
         const equals = options.equals;
         if (equals) {
-          node.equal = equals;
+          node.equalFn = equals;
         }
-        node.watched = options[Signal.subtle.watched];
-        node.unwatched = options[Signal.subtle.unwatched];
+        node.watchedFn = options[Signal.subtle.watched];
+        node.unwatchedFn = options[Signal.subtle.unwatched];
       }
     }
 
     public get(): T {
       if (!isState(this)) throw new TypeError('Wrong receiver type for Signal.State.prototype.get');
-      return (signalGetFn<T>).call(this[NODE]);
+      return this[NODE].get();
     }
 
     public set(newValue: T): void {
@@ -72,8 +65,7 @@ export namespace Signal {
       if (isInNotificationPhase()) {
         throw new Error('Writes to signals not permitted during Watcher callback');
       }
-      const ref = this[NODE];
-      signalSetFn<T>(ref, newValue);
+      this[NODE].set(newValue);
     }
   }
 
@@ -90,25 +82,23 @@ export namespace Signal {
     // Create a Signal which evaluates to the value returned by the callback.
     // Callback is called with this signal as the parameter.
     constructor(computation: () => T, options?: Signal.Options<T>) {
-      const ref = createComputed<T>(computation);
-      const node = ref[SIGNAL];
-      node.consumerAllowSignalWrites = true;
+      const node = new ComputedNode<T>(computation);
       this[NODE] = node;
       node.wrapper = this;
       if (options) {
         const equals = options.equals;
         if (equals) {
-          node.equal = equals;
+          node.equalFn = equals;
         }
-        node.watched = options[Signal.subtle.watched];
-        node.unwatched = options[Signal.subtle.unwatched];
+        node.watchedFn = options[Signal.subtle.watched];
+        node.unwatchedFn = options[Signal.subtle.unwatched];
       }
     }
 
     get(): T {
       if (!isComputed(this))
         throw new TypeError('Wrong receiver type for Signal.Computed.prototype.get');
-      return computedGet(this[NODE]);
+      return this[NODE].get();
     }
   }
 
@@ -120,17 +110,7 @@ export namespace Signal {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace subtle {
     // Run a callback with all tracking disabled (even for nested computed).
-    export function untrack<T>(cb: () => T): T {
-      let output: T;
-      let prevActiveConsumer = null;
-      try {
-        prevActiveConsumer = setActiveConsumer(null);
-        output = cb();
-      } finally {
-        setActiveConsumer(prevActiveConsumer);
-      }
-      return output;
-    }
+    export const untrack = graphUntrack;
 
     // Returns ordered list of all signals which this one referenced
     // during the last time it was evaluated
@@ -138,7 +118,7 @@ export namespace Signal {
       if (!isComputed(sink) && !isWatcher(sink)) {
         throw new TypeError('Called introspectSources without a Computed or Watcher argument');
       }
-      return sink[NODE].producerNode?.map((n) => n.wrapper) ?? [];
+      return [...sink[NODE].producers.keys()].map((n) => n.wrapper) ?? [];
     }
 
     // Returns the subset of signal sinks which recursively
@@ -148,7 +128,7 @@ export namespace Signal {
       if (!isComputed(signal) && !isState(signal)) {
         throw new TypeError('Called introspectSinks without a Signal argument');
       }
-      return signal[NODE].liveConsumerNode?.map((n) => n.wrapper) ?? [];
+      return [...signal[NODE].consumers.keys()].map((n) => n.wrapper) ?? [];
     }
 
     // True iff introspectSinks() is non-empty
@@ -156,9 +136,9 @@ export namespace Signal {
       if (!isComputed(signal) && !isState(signal)) {
         throw new TypeError('Called hasSinks without a Signal argument');
       }
-      const liveConsumerNode = signal[NODE].liveConsumerNode;
+      const liveConsumerNode = signal[NODE].consumers;
       if (!liveConsumerNode) return false;
-      return liveConsumerNode.length > 0;
+      return liveConsumerNode.size > 0;
     }
 
     // True iff introspectSources() is non-empty
@@ -166,13 +146,13 @@ export namespace Signal {
       if (!isComputed(signal) && !isWatcher(signal)) {
         throw new TypeError('Called hasSources without a Computed or Watcher argument');
       }
-      const producerNode = signal[NODE].producerNode;
+      const producerNode = signal[NODE].producers;
       if (!producerNode) return false;
-      return producerNode.length > 0;
+      return producerNode.size > 0;
     }
 
     export class Watcher {
-      readonly [NODE]: ReactiveNode;
+      readonly [NODE]: WatcherNode;
 
       #brand() {}
       static {
@@ -183,12 +163,8 @@ export namespace Signal {
       // if it hasn't already been called since the last `watch` call.
       // No signals may be read or written during the notify.
       constructor(notify: (this: Watcher) => void) {
-        let node = Object.create(REACTIVE_NODE);
+        const node = new WatcherNode(notify);
         node.wrapper = this;
-        node.consumerMarkedDirty = notify;
-        node.consumerIsAlwaysLive = true;
-        node.consumerAllowSignalWrites = false;
-        node.producerNode = [];
         this[NODE] = node;
       }
 
@@ -212,11 +188,9 @@ export namespace Signal {
 
         const node = this[NODE];
         node.dirty = false; // Give the watcher a chance to trigger again
-        const prev = setActiveConsumer(node);
         for (const signal of signals) {
-          producerAccessed(signal[NODE]);
+          signal[NODE].registerConsumer(node);
         }
-        setActiveConsumer(prev);
       }
 
       // Remove these signals from the watched set (e.g., for an effect which is disposed)
@@ -227,28 +201,8 @@ export namespace Signal {
         this.#assertSignals(signals);
 
         const node = this[NODE];
-        assertConsumerNode(node);
-
-        for (let i = node.producerNode.length - 1; i >= 0; i--) {
-          if (signals.includes(node.producerNode[i].wrapper)) {
-            producerRemoveLiveConsumerAtIndex(node.producerNode[i], node.producerIndexOfThis[i]);
-
-            // Logic copied from producerRemoveLiveConsumerAtIndex, but reversed
-            const lastIdx = node.producerNode!.length - 1;
-            node.producerNode![i] = node.producerNode![lastIdx];
-            node.producerIndexOfThis[i] = node.producerIndexOfThis[lastIdx];
-
-            node.producerNode.length--;
-            node.producerIndexOfThis.length--;
-            node.nextProducerIndex--;
-
-            if (i < node.producerNode.length) {
-              const idxConsumer = node.producerIndexOfThis[i];
-              const producer = node.producerNode[i];
-              assertProducerNode(producer);
-              producer.liveConsumerIndexOfThis[idxConsumer] = i;
-            }
-          }
+        for (const signal of signals) {
+          signal[NODE].unregisterConsumer(node);
         }
       }
 
@@ -259,7 +213,9 @@ export namespace Signal {
           throw new TypeError('Called getPending without Watcher receiver');
         }
         const node = this[NODE];
-        return node.producerNode!.filter((n) => n.dirty).map((n) => n.wrapper);
+        return [...node.producers.keys()]
+          .filter((n) => n instanceof ComputedNode && n.dirty)
+          .map((n) => n.wrapper);
       }
     }
 

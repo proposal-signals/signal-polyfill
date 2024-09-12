@@ -10,9 +10,11 @@ describe('liveness', () => {
       [Signal.subtle.unwatched]: unwatchedSpy,
     });
     const computed = new Signal.Computed(() => state.get());
-    computed.get();
-    expect(watchedSpy).not.toBeCalled();
-    expect(unwatchedSpy).not.toBeCalled();
+    computed.get(); // reading a computed is considered watching and unwatching it
+    expect(watchedSpy).toHaveBeenCalledTimes(1);
+    expect(unwatchedSpy).toHaveBeenCalledTimes(1);
+    watchedSpy.mockClear();
+    unwatchedSpy.mockClear();
 
     const w = new Signal.subtle.Watcher(() => {});
     const w2 = new Signal.subtle.Watcher(() => {});
@@ -43,9 +45,11 @@ describe('liveness', () => {
       [Signal.subtle.unwatched]: unwatchedSpy,
     });
 
-    c.get();
-    expect(watchedSpy).not.toBeCalled();
-    expect(unwatchedSpy).not.toBeCalled();
+    c.get(); // reading a computed is considered watching and unwatching it
+    expect(watchedSpy).toHaveBeenCalledTimes(1);
+    expect(unwatchedSpy).toHaveBeenCalledTimes(1);
+    watchedSpy.mockClear();
+    unwatchedSpy.mockClear();
 
     const w = new Signal.subtle.Watcher(() => {});
     w.watch(c);
