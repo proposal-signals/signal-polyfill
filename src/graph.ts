@@ -58,6 +58,7 @@ export const REACTIVE_NODE: ReactiveNode = {
   version: 0 as Version,
   lastCleanEpoch: 0 as Version,
   dirty: false,
+  volatile: 0,
   producerNode: undefined,
   producerLastReadVersion: undefined,
   producerIndexOfThis: undefined,
@@ -108,6 +109,12 @@ export interface ReactiveNode {
    * producer.
    */
   dirty: boolean;
+
+  /**
+   * Whether this node is volatile:
+   * 0 if it is not volatile, 1 if it is itself volatile, and 2 if it has a volatile dependency.
+   */
+  volatile: 0 | 1 | 2;
 
   /**
    * Producers which are dependencies of this consumer.
@@ -275,27 +282,22 @@ export function producerIncrementEpoch(): void {
  * Ensure this producer's `version` is up-to-date.
  */
 export function producerUpdateValueVersion(node: ReactiveNode): void {
-  if (consumerIsLive(node) && !node.dirty) {
-    // A live consumer will be marked dirty by producers, so a clean state means that its version
-    // is guaranteed to be up-to-date.
-    return;
-  }
+  if (!node.volatile || consumerIsLive(node)) {
+    if (!node.dirty && node.lastCleanEpoch === epoch && !node.volatile) {
+      // Even non-live consumers can skip polling if they previously found themselves to be clean at
+      // the current epoch, since their dependencies could not possibly have changed (such a change
+      // would've increased the epoch).
+      return;
+    }
 
-  if (!node.dirty && node.lastCleanEpoch === epoch) {
-    // Even non-live consumers can skip polling if they previously found themselves to be clean at
-    // the current epoch, since their dependencies could not possibly have changed (such a change
-    // would've increased the epoch).
-    return;
+    if (!node.producerMustRecompute(node) && !consumerPollProducersForChange(node)) {
+      // None of our producers report a change since the last time they were read, so no
+      // recomputation of our value is necessary, and we can consider ourselves clean.
+      node.dirty = false;
+      node.lastCleanEpoch = epoch;
+      return;
+    }
   }
-
-  if (!node.producerMustRecompute(node) && !consumerPollProducersForChange(node)) {
-    // None of our producers report a change since the last time they were read, so no
-    // recomputation of our value is necessary, and we can consider ourselves clean.
-    node.dirty = false;
-    node.lastCleanEpoch = epoch;
-    return;
-  }
-
   node.producerRecomputeValue(node);
 
   // After recomputing the value, we're no longer dirty.
@@ -386,6 +388,10 @@ export function consumerAfterComputation(
     node.producerNode.pop();
     node.producerLastReadVersion.pop();
     node.producerIndexOfThis.pop();
+  }
+
+  if (node.volatile !== 1) {
+    node.volatile = node.producerNode.some((p) => p.volatile) ? 2 : 0;
   }
 }
 

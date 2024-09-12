@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {Signal} from '../../src/wrapper.js';
 
 describe('Computed', () => {
@@ -16,6 +16,55 @@ describe('Computed', () => {
 
     expect(stateSignal.get()).toEqual(5);
     expect(computedSignal.get()).toEqual(10);
+  });
+
+  it('does not cache volatile sources', () => {
+    let count = 0;
+    const volatileSignal = new Signal.Volatile(() => count++);
+    const computedSignal = new Signal.Computed(() => volatileSignal.get());
+
+    // Since the volatile source can change at any time we can't cache the
+    // dependency value.
+    expect(computedSignal.get()).toBe(0);
+    expect(computedSignal.get()).toBe(1);
+  });
+
+  it('still caches equal outputs when depending on volatile sources', () => {
+    const volatileSignal = new Signal.Volatile(() => null);
+    const computeFn = vi.fn(() => {
+      volatileSignal.get();
+      return Symbol('This symbol should be cached');
+    });
+
+    const computedSignal = new Signal.Computed(computeFn, {equals: () => true});
+
+    // Forcing the computed to re-evaluate should not break our ability to
+    // cache the output if `equals` indicates it's the same.
+    expect(computedSignal.get()).toBe(computedSignal.get());
+    expect(computeFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('can become non-volatile again if the volatile sources are removed', () => {
+    const branchSignal = new Signal.State(true);
+    const volatileSignal = new Signal.Volatile(() => null);
+    const computeFn = vi.fn(() => {
+      if (branchSignal.get()) {
+        volatileSignal.get();
+      }
+    });
+
+    const computedSignal = new Signal.Computed(computeFn);
+
+    // Depends on volatile sources.
+    computedSignal.get();
+    computedSignal.get();
+    expect(computeFn).toHaveBeenCalledTimes(2);
+
+    // Volatile source removed.
+    branchSignal.set(false);
+    computedSignal.get();
+    computedSignal.get();
+    expect(computeFn).toHaveBeenCalledTimes(3);
   });
 
   describe('Comparison semantics', () => {
