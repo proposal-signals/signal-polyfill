@@ -72,6 +72,28 @@ describe('Computed', () => {
     });
   });
 
+  it('should work to change a dependent signal in a computed', () => {
+    const s = new Signal.State(0);
+    const c = new Signal.Computed(() => {
+      const value = s.get();
+      if (value < 10) {
+        s.set(value + 1);
+      }
+      return value;
+    });
+    const d = new Signal.Computed(() => {
+      const value = s.get();
+      if (value < 10) {
+        s.set(value + 1);
+      }
+      return value;
+    });
+    expect(c.get()).toBe(10);
+    expect(d.get()).toBe(10);
+    expect(c.get()).toBe(10);
+    expect(d.get()).toBe(10);
+  });
+
   it('should not recompute when the dependent values go back to the ones used for last computation', () => {
     const s = new Signal.State(0);
     let n = 0;
