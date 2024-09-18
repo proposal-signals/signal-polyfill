@@ -236,14 +236,24 @@ export class ComputedNode<T> extends SignalNode<T | ComputedSpecialValues> imple
     this.computing = true;
     let value: T | ComputedSpecialValues;
     const prevActiveConsumer = setActiveConsumer(this);
-    try {
-      value = this.computeFn.call(this.wrapper);
-    } catch (error) {
-      value = COMPUTED_ERRORED;
-      this.error = error;
+    let isUpToDate = false;
+    let iterations = 0;
+    while (!isUpToDate && iterations < 1000) {
+      try {
+        value = this.computeFn.call(this.wrapper);
+      } catch (error) {
+        value = COMPUTED_ERRORED;
+        this.error = error;
+      }
+      this.#removeUnusedProducers();
+      iterations++;
+      isUpToDate = this.#areProducersUpToDate();
     }
-    this.#removeUnusedProducers();
     setActiveConsumer(prevActiveConsumer);
+    if (!isUpToDate) {
+      value = COMPUTED_ERRORED;
+      this.error = new Error('Could not stabilize the computation.');
+    }
     this.computing = false;
     this.dirty = false;
     this.set(value, false);
