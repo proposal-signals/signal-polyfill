@@ -1,17 +1,17 @@
 {
   "solution": {
     "signal-polyfill": {
-      "impact": "patch",
-      "oldVersion": "0.1.1",
-      "newVersion": "0.1.2",
+      "impact": "minor",
+      "oldVersion": "0.1.2",
+      "newVersion": "0.2.0",
       "constraints": [
         {
-          "impact": "patch",
-          "reason": "Appears in changelog section :bug: Bug Fix"
+          "impact": "minor",
+          "reason": "Appears in changelog section :rocket: Enhancement"
         },
         {
           "impact": "patch",
-          "reason": "Appears in changelog section :memo: Documentation"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -21,5 +21,5 @@
       "pkgJSONPath": "./package.json"
     }
   },
-  "description": "## Release (2024-07-23)\n\nsignal-polyfill 0.1.2 (patch)\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#26](https://github.com/proposal-signals/signal-polyfill/pull/26) Fix unwatch multiple signals ([@tuhm1](https://github.com/tuhm1))\n  * [#21](https://github.com/proposal-signals/signal-polyfill/pull/21) Turn off minify for release bundle ([@ds300](https://github.com/ds300))\n\n#### :memo: Documentation\n* `signal-polyfill`\n  * [#13](https://github.com/proposal-signals/signal-polyfill/pull/13) improve effects example slightly ([@benlesh](https://github.com/benlesh))\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#20](https://github.com/proposal-signals/signal-polyfill/pull/20) Set up prettier ([@ds300](https://github.com/ds300))\n  * [#11](https://github.com/proposal-signals/signal-polyfill/pull/11) Reorganize and split tests ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 4\n- Ben Lesh ([@benlesh](https://github.com/benlesh))\n- David Sheldrick ([@ds300](https://github.com/ds300))\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n- [@tuhm1](https://github.com/tuhm1)\n"
+  "description": "## Release (2024-10-01)\n\nsignal-polyfill 0.2.0 (minor)\n\n#### :rocket: Enhancement\n* `signal-polyfill`\n  * [#18](https://github.com/proposal-signals/signal-polyfill/pull/18) Use prepare script allowing usage from git npm dependency ([@divdavem](https://github.com/divdavem))\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#16](https://github.com/proposal-signals/signal-polyfill/pull/16) fix: it should not break a computed signal to watch it before getting its value ([@divdavem](https://github.com/divdavem))\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#29](https://github.com/proposal-signals/signal-polyfill/pull/29) Add prettierignore ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 2\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n- [@divdavem](https://github.com/divdavem)\n"
 }

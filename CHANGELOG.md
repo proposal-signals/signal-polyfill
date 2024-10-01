@@ -1,5 +1,25 @@
 # Changelog
 
+## Release (2024-10-01)
+
+signal-polyfill 0.2.0 (minor)
+
+#### :rocket: Enhancement
+* `signal-polyfill`
+  * [#18](https://github.com/proposal-signals/signal-polyfill/pull/18) Use prepare script allowing usage from git npm dependency ([@divdavem](https://github.com/divdavem))
+
+#### :bug: Bug Fix
+* `signal-polyfill`
+  * [#16](https://github.com/proposal-signals/signal-polyfill/pull/16) fix: it should not break a computed signal to watch it before getting its value ([@divdavem](https://github.com/divdavem))
+
+#### :house: Internal
+* `signal-polyfill`
+  * [#29](https://github.com/proposal-signals/signal-polyfill/pull/29) Add prettierignore ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+- [@divdavem](https://github.com/divdavem)
+
 ## Release (2024-07-23)
 
 signal-polyfill 0.1.2 (patch)
