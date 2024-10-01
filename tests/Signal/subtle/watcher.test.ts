@@ -178,4 +178,16 @@ describe('Watcher', () => {
     signal.set(1);
     expect(mockGetPending).toBeCalled();
   });
+
+  it('should not break a computed signal to watch it before getting its value', () => {
+    const signal = new Signal.State(0);
+    const computedSignal = new Signal.Computed(() => signal.get());
+    const watcher = new Signal.subtle.Watcher(() => {});
+    expect(computedSignal.get()).toBe(0);
+    signal.set(1);
+    watcher.watch(computedSignal);
+    expect(computedSignal.get()).toBe(1);
+    watcher.unwatch(computedSignal);
+    expect(computedSignal.get()).toBe(1);
+  });
 });
