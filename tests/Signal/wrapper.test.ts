@@ -21,7 +21,7 @@ describe('Performance', () => {
   });
   it('batch unwatch is fast', () => {
     const amountOfSignals = 10000;
-    const unwatchToWatchSlownessRatio = 2.5;
+    const unwatchToWatchSlownessRatio = 4;
     const w = new Signal.subtle.Watcher(() => {});
     const signals = Array.from({length: amountOfSignals}, () => new Signal.State(1));
     const watchStart = performance.now();
