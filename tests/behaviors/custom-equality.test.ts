@@ -105,4 +105,41 @@ describe('Custom equality', () => {
     expect(outerFn).toBeCalledTimes(2);
     expect(cutoff).toBeCalledTimes(2);
   });
+
+  it('should not call equal multiple times for the same comparison', () => {
+    let equalCalls: [number, number][] = [];
+    const equals = (a: number, b: number) => {
+      equalCalls.push([a, b]);
+      return a === b;
+    };
+    const s = new Signal.State<number>(0, {equals});
+    let n1 = 0;
+    let n2 = 0;
+    const c1 = new Signal.Computed(() => (n1++, s.get()));
+    const c2 = new Signal.Computed(() => (n2++, s.get()));
+    expect(equalCalls).toEqual([]);
+    expect(n1).toBe(0);
+    expect(c1.get()).toBe(0);
+    expect(n1).toBe(1);
+    expect(n2).toBe(0);
+    expect(c2.get()).toBe(0);
+    expect(n2).toBe(1);
+    s.set(1);
+    expect(equalCalls).toEqual([[0, 1]]);
+    equalCalls = [];
+    expect(n1).toBe(1);
+    expect(n2).toBe(1);
+    s.set(0);
+    expect(equalCalls).toEqual([[1, 0]]);
+    equalCalls = [];
+    expect(n1).toBe(1);
+    expect(n2).toBe(1);
+    expect(c1.get()).toBe(0); // the last time c1 was computed was with s = 0, no need to recompute
+    expect(equalCalls).toEqual([[0, 0]]); // equal should have been called
+    equalCalls = [];
+    expect(c2.get()).toBe(0); // the last time c2 was computed was with s = 0, no need to recompute
+    expect(equalCalls).toEqual([]); // equal should not have been called again
+    expect(n1).toBe(1);
+    expect(n2).toBe(1);
+  });
 });
