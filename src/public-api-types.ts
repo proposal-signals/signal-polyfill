@@ -8,7 +8,7 @@ import {Signal} from './wrapper.ts';
 /**
  * Top-Level
  */
-expectTypeOf<keyof typeof Signal>().toMatchTypeOf<
+expectTypeOf<keyof typeof Signal>().toEqualTypeOf<
   'State' | 'Computed' | 'subtle' | 'isState' | 'isComputed' | 'isWatcher'
 >();
 
@@ -90,6 +90,6 @@ expectTypeOf<keyof Signal.subtle.Watcher & string>().toEqualTypeOf<
 /**
  * Inference works
  */
-expectTypeOf(new Signal.State(0)).toMatchTypeOf<Signal.State<number>>();
-expectTypeOf(new Signal.State(0).get()).toMatchTypeOf<number>();
-expectTypeOf(new Signal.State(0).set(1)).toMatchTypeOf<void>();
+expectTypeOf(new Signal.State(0)).toEqualTypeOf<Signal.State<number>>();
+expectTypeOf(new Signal.State(0).get()).toEqualTypeOf<number>();
+expectTypeOf(new Signal.State(0).set(1)).toEqualTypeOf<void>();
