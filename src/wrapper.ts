@@ -34,8 +34,9 @@ const NODE: unique symbol = Symbol('node');
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Signal {
-
-  export let isState: (s: any) => boolean, isComputed: (s: any) => boolean, isWatcher: (s: any) => boolean;
+  export let isState: (s: any) => boolean,
+    isComputed: (s: any) => boolean,
+    isWatcher: (s: any) => boolean;
 
   // A read-write Signal
   export class State<T> {
