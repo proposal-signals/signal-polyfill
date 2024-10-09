@@ -1,5 +1,16 @@
 # Changelog
 
+## Release (2024-10-09)
+
+signal-polyfill 0.2.1 (patch)
+
+#### :bug: Bug Fix
+* `signal-polyfill`
+  * [#35](https://github.com/proposal-signals/signal-polyfill/pull/35) Export isState, isComputed, isWatcher checks ([@EvanCzako](https://github.com/EvanCzako))
+
+#### Committers: 1
+- Evan Czako ([@EvanCzako](https://github.com/EvanCzako))
+
 ## Release (2024-10-01)
 
 signal-polyfill 0.2.0 (minor)
