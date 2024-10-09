@@ -32,10 +32,11 @@ import {createSignal, signalGetFn, signalSetFn, type SignalNode} from './signal.
 
 const NODE: unique symbol = Symbol('node');
 
-let isState: (s: any) => boolean, isComputed: (s: any) => boolean, isWatcher: (s: any) => boolean;
-
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Signal {
+
+  export let isState: (s: any) => boolean, isComputed: (s: any) => boolean, isWatcher: (s: any) => boolean;
+
   // A read-write Signal
   export class State<T> {
     readonly [NODE]: SignalNode<T>;
