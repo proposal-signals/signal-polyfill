@@ -1,25 +1,17 @@
 {
   "solution": {
     "signal-polyfill": {
-      "impact": "minor",
-      "oldVersion": "0.1.2",
-      "newVersion": "0.2.0",
+      "impact": "patch",
+      "oldVersion": "0.2.0",
+      "newVersion": "0.2.1",
       "constraints": [
-        {
-          "impact": "minor",
-          "reason": "Appears in changelog section :rocket: Enhancement"
-        },
         {
           "impact": "patch",
           "reason": "Appears in changelog section :bug: Bug Fix"
-        },
-        {
-          "impact": "patch",
-          "reason": "Appears in changelog section :house: Internal"
         }
       ],
       "pkgJSONPath": "./package.json"
     }
   },
-  "description": "## Release (2024-10-01)\n\nsignal-polyfill 0.2.0 (minor)\n\n#### :rocket: Enhancement\n* `signal-polyfill`\n  * [#18](https://github.com/proposal-signals/signal-polyfill/pull/18) Use prepare script allowing usage from git npm dependency ([@divdavem](https://github.com/divdavem))\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#16](https://github.com/proposal-signals/signal-polyfill/pull/16) fix: it should not break a computed signal to watch it before getting its value ([@divdavem](https://github.com/divdavem))\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#29](https://github.com/proposal-signals/signal-polyfill/pull/29) Add prettierignore ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 2\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n- [@divdavem](https://github.com/divdavem)\n"
+  "description": "## Release (2024-10-09)\n\nsignal-polyfill 0.2.1 (patch)\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#35](https://github.com/proposal-signals/signal-polyfill/pull/35) Export isState, isComputed, isWatcher checks ([@EvanCzako](https://github.com/EvanCzako))\n\n#### Committers: 1\n- Evan Czako ([@EvanCzako](https://github.com/EvanCzako))\n"
 }

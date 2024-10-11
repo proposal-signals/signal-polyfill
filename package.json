@@ -1,6 +1,6 @@
 {
   "name": "signal-polyfill",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A polyfill for the TC39 Signal proposal.",
   "repository": {
     "type": "git",
