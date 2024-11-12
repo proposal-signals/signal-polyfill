@@ -47,3 +47,6 @@ build
 dist/
 *.tsbuildinfo
 .DS_Store
+
+# Benchmarks result:
+benchmarks.json
