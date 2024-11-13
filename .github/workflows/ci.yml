@@ -10,17 +10,20 @@ concurrency:
   group: ci-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   test:
     name: 'Test ${{ matrix.testenv.name }}'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     strategy:
       matrix:
         testenv:
           - {name: 'Node', args: ''}
-          - {name: 'Chrome', args: '--browser.name=chrome --browser.headless'}
-          - {name: 'Firefox', args: '--browser.name=firefox --browser.headless'}
+          - {name: 'Chrome', args: '--browser.provider=webdriverio --browser.name=chrome --browser.headless'}
+          - {name: 'Firefox', args: '--browser.provider=webdriverio --browser.name=firefox --browser.headless'}
 
     steps:
       - uses: actions/checkout@v4
@@ -29,3 +32,15 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm vitest ${{ matrix.testenv.args }}
+      - run: pnpm vitest bench
+        if: matrix.testenv.name == 'Node'
+      - uses: benchmark-action/github-action-benchmark@d48d326b4ca9ba73ca0cd0d59f108f9e02a381c7 #v1.20.4
+        if: matrix.testenv.name == 'Node'
+        with:
+          name: Benchmarks
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmarks.json
+          auto-push: ${{ github.event_name == 'push' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          summary-always: true
