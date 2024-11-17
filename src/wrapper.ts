@@ -34,17 +34,34 @@ const NODE: unique symbol = Symbol('node');
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Signal {
-  export let isState: (s: any) => boolean,
-    isComputed: (s: any) => boolean,
-    isWatcher: (s: any) => boolean;
+  const guards = {
+    isState: (_: unknown) => false,
+    isWatcher: (_: unknown) => false,
+    isComputed: (_: unknown) => false,
+  };
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function isState<T = any>(s: unknown): s is State<T> {
+    return guards.isState(s);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function isComputed<T = any>(c: unknown): c is Computed<T> {
+    return guards.isComputed(c);
+  }
+  
+  export function isWatcher(w: unknown): w is Watcher {
+    return guards.isWatcher(w);
+  }
 
   // A read-write Signal
   export class State<T> {
     readonly [NODE]: SignalNode<T>;
-    #brand() {}
+    
+    #brand = true;
 
     static {
-      isState = (s) => #brand in s;
+      guards.isState = (s) => #brand in Object(s);
     }
 
     constructor(initialValue: T, options: Signal.Options<T> = {}) {
@@ -81,10 +98,11 @@ export namespace Signal {
   export class Computed<T> {
     readonly [NODE]: ComputedNode<T>;
 
-    #brand() {}
+    #brand = true;
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static {
-      isComputed = (c: any) => #brand in c;
+      guards.isComputed = (c) => #brand in Object(c);
     }
 
     // Create a Signal which evaluates to the value returned by the callback.
@@ -174,9 +192,10 @@ export namespace Signal {
     export class Watcher {
       readonly [NODE]: ReactiveNode;
 
-      #brand() {}
+      #brand = true;
+      
       static {
-        isWatcher = (w: any): w is Watcher => #brand in w;
+        guards.isWatcher = (w) => #brand in Object(w);
       }
 
       // When a (recursive) source of Watcher is written to, call this callback,
