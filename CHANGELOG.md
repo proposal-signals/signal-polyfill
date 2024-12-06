@@ -1,5 +1,16 @@
 # Changelog
 
+## Release (2024-12-06)
+
+signal-polyfill 0.2.2 (patch)
+
+#### :house: Internal
+* `signal-polyfill`
+  * [#37](https://github.com/proposal-signals/signal-polyfill/pull/37) Add type-tests to ensure consistent public API expectations ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-10-09)
 
 signal-polyfill 0.2.1 (patch)
