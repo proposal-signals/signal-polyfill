@@ -2,16 +2,16 @@
   "solution": {
     "signal-polyfill": {
       "impact": "patch",
-      "oldVersion": "0.2.0",
-      "newVersion": "0.2.1",
+      "oldVersion": "0.2.1",
+      "newVersion": "0.2.2",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Appears in changelog section :bug: Bug Fix"
+          "reason": "Appears in changelog section :house: Internal"
         }
       ],
       "pkgJSONPath": "./package.json"
     }
   },
-  "description": "## Release (2024-10-09)\n\nsignal-polyfill 0.2.1 (patch)\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#35](https://github.com/proposal-signals/signal-polyfill/pull/35) Export isState, isComputed, isWatcher checks ([@EvanCzako](https://github.com/EvanCzako))\n\n#### Committers: 1\n- Evan Czako ([@EvanCzako](https://github.com/EvanCzako))\n"
+  "description": "## Release (2024-12-06)\n\nsignal-polyfill 0.2.2 (patch)\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#37](https://github.com/proposal-signals/signal-polyfill/pull/37) Add type-tests to ensure consistent public API expectations ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
 }
