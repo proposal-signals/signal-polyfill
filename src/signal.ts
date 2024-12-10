@@ -33,6 +33,7 @@ let postSignalSetFn: (() => void) | null = null;
 export interface SignalNode<T> extends ReactiveNode {
   value: T;
   equal: ValueEqualityFn<T>;
+  equalCache: Record<number, boolean> | null;
 }
 
 export type SignalBaseGetter<T> = (() => T) & {readonly [SIGNAL]: unknown};
@@ -94,12 +95,28 @@ export const SIGNAL_NODE: SignalNode<unknown> = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
     equal: defaultEquals,
+    equalCache: null,
     value: undefined,
+    producerEquals(node: SignalNode<unknown>, value, valueVersion) {
+      if (valueVersion + 1 === node.version) {
+        return false; // equal is called before the version is incremented
+      }
+      let res = node.equalCache?.[valueVersion];
+      if (res == null) {
+        res = !!node.equal.call(node.wrapper, value, node.value);
+        if (!node.equalCache) {
+          node.equalCache = {};
+        }
+        node.equalCache[valueVersion] = res;
+      }
+      return res;
+    },
   };
 })();
 
 function signalValueChanged<T>(node: SignalNode<T>): void {
   node.version++;
+  node.equalCache = null;
   producerIncrementEpoch();
   producerNotifyConsumers(node);
   postSignalSetFn?.();

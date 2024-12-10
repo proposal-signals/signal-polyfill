@@ -10,11 +10,13 @@ import {defaultEquals, ValueEqualityFn} from './equality.js';
 import {
   consumerAfterComputation,
   consumerBeforeComputation,
+  consumerPollProducersForChange,
   producerAccessed,
   producerUpdateValueVersion,
   REACTIVE_NODE,
   ReactiveNode,
   SIGNAL,
+  Version,
 } from './graph.js';
 
 /**
@@ -41,6 +43,7 @@ export interface ComputedNode<T> extends ReactiveNode {
   computation: () => T;
 
   equal: ValueEqualityFn<T>;
+  equalCache: Record<number, boolean> | null;
 }
 
 export type ComputedGetter<T> = (() => T) & {
@@ -103,11 +106,35 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
     dirty: true,
     error: null,
     equal: defaultEquals,
+    equalCache: null,
 
     producerMustRecompute(node: ComputedNode<unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the
       // process of being calculated (which should throw an error).
       return node.value === UNSET || node.value === COMPUTING;
+    },
+
+    producerEquals(node: ComputedNode<unknown>, value: unknown, valueVersion: Version) {
+      if (
+        valueVersion + 1 === node.version || // equal is called before the version is incremented
+        value === ERRORED ||
+        node.value === ERRORED ||
+        value === COMPUTING ||
+        node.value === COMPUTING ||
+        value === UNSET ||
+        node.value === UNSET
+      ) {
+        return false;
+      }
+      let res = node.equalCache?.[valueVersion];
+      if (res == null) {
+        res = !!node.equal.call(node.wrapper, value, node.value);
+        if (!node.equalCache) {
+          node.equalCache = {};
+        }
+        node.equalCache[valueVersion] = res;
+      }
+      return res;
     },
 
     producerRecomputeValue(node: ComputedNode<unknown>): void {
@@ -119,19 +146,29 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
       const oldValue = node.value;
       node.value = COMPUTING;
 
-      const prevConsumer = consumerBeforeComputation(node);
       let newValue: unknown;
-      let wasEqual = false;
-      try {
-        newValue = node.computation.call(node.wrapper);
-        const oldOk = oldValue !== UNSET && oldValue !== ERRORED;
-        wasEqual = oldOk && node.equal.call(node.wrapper, oldValue, newValue);
-      } catch (err) {
-        newValue = ERRORED;
-        node.error = err;
-      } finally {
-        consumerAfterComputation(node, prevConsumer);
+      let outdatedReadVersion = true;
+      let iterations = 0;
+      while (outdatedReadVersion && iterations < 1000) {
+        iterations++;
+        const prevConsumer = consumerBeforeComputation(node);
+        try {
+          newValue = node.computation.call(node.wrapper);
+        } catch (err) {
+          newValue = ERRORED;
+          node.error = err;
+        } finally {
+          consumerAfterComputation(node, prevConsumer);
+        }
+        outdatedReadVersion = consumerPollProducersForChange(node);
       }
+      if (outdatedReadVersion) {
+        newValue = ERRORED;
+        node.error = new Error('Could not stabilize the computation.');
+      }
+
+      const canCompare = oldValue !== UNSET && oldValue !== ERRORED && newValue !== ERRORED;
+      const wasEqual = canCompare && node.equal.call(node.wrapper, oldValue, newValue);
 
       if (wasEqual) {
         // No change to `valueVersion` - old and new values are
