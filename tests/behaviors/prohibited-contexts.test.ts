@@ -13,8 +13,7 @@ describe('Prohibited contexts', () => {
     if (isAlien) {
       expect(c.get()).toBe(3);
       expect(s.get()).toBe(3);
-    }
-    else {
+    } else {
       // Note: c is marked clean in this case, even though re-evaluating it
       // would cause it to change value (due to the set inside of it).
       expect(c.get()).toBe(2);

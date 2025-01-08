@@ -1,6 +1,10 @@
 import * as alien from 'alien-signals';
 
+const WATCHER_TRACK_ID = -1;
+
 export namespace Signal {
+  export const untrack = alien.untrack;
+
   export function batch<T>(fn: () => T): T {
     alien.startBatch();
     try {
@@ -40,6 +44,9 @@ export namespace Signal {
     }
 
     get() {
+      if (alien.activeTrackId === WATCHER_TRACK_ID) {
+        throw new Error('Cannot read from state inside watcher');
+      }
       const lastSub = this.subsTail;
       const value = super.get();
       const newSub = this.subsTail;
@@ -50,6 +57,9 @@ export namespace Signal {
     }
 
     set(value: T): void {
+      if (alien.activeTrackId === WATCHER_TRACK_ID) {
+        throw new Error('Cannot write to state inside watcher');
+      }
       if (!this.equals(this.currentValue, value)) {
         this.currentValue = value;
         const subs = this.subs;
@@ -105,6 +115,9 @@ export namespace Signal {
     get() {
       if (this.flags & alien.SubscriberFlags.Tracking) {
         throw new Error('Cycles detected');
+      }
+      if (alien.activeTrackId === WATCHER_TRACK_ID) {
+        throw new Error('Cannot read from computed inside watcher');
       }
       const lastSub = this.subsTail;
       const value = super.get();
@@ -177,7 +190,7 @@ export namespace Signal {
         this.flags = alien.SubscriberFlags.None;
         const prevSub = alien.activeSub;
         const prevTrackId = alien.activeTrackId;
-        alien.setActiveSub(undefined, 0);
+        alien.setActiveSub(undefined, WATCHER_TRACK_ID);
         try {
           this.fn();
         } finally {
@@ -185,26 +198,25 @@ export namespace Signal {
         }
       }
 
-      watch(signal?: AnySignal): void {
-        if (!signal) {
-          console.log('No effect on this call');
-          return;
+      watch(...signals: AnySignal[]): void {
+        for (const signal of signals) {
+          alien.link(signal, this);
+          signal.onWatched();
         }
-        alien.link(signal, this);
-        signal.onWatched();
         this.flags = alien.SubscriberFlags.None;
       }
 
-      unwatch(signal: AnySignal): void {
+      unwatch(...signals: AnySignal[]): void {
         alien.startTrack(this);
         let dep = this.deps;
         while (dep) {
-          if (dep.dep !== signal) {
-            alien.link(signal, this);
-          } else {
-            signal.onUnwatched();
+          if (!signals.includes(dep.dep as AnySignal)) {
+            alien.link(dep.dep, this);
           }
           dep = dep.nextDep;
+        }
+        for (const signal of signals) {
+          signal.onUnwatched();
         }
         alien.endTrack(this);
       }
