@@ -180,10 +180,21 @@ export namespace Signal {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type AnySignal<T = any> = State<T> | Computed<T>;
 
+  const PENDING = 1 << 5;
+
   export namespace subtle {
     export class Watcher extends alien.Effect {
       constructor(fn: () => void) {
         super(fn);
+      }
+
+      notify() {
+        let flags = this.flags;
+        if (flags & alien.SubscriberFlags.Dirty) {
+          this.run();
+        } else if (flags & alien.SubscriberFlags.ToCheckDirty) {
+          this.flags = PENDING;
+        }
       }
 
       run() {

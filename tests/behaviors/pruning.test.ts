@@ -1,8 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {Signal} from '../../src/alien.js';
 
-const isAlien = true;
-
 describe('Pruning', () => {
   it('only recalculates until things are equal', () => {
     const s = new Signal.State(0);
@@ -53,14 +51,11 @@ describe('Pruning', () => {
     expect(n3).toBe(1);
 
     s.set(1);
+    expect(n).toBe(1);
+    expect(n2).toBe(1);
+    expect(n3).toBe(1);
 
-    if (!isAlien) {
-      expect(n).toBe(1);
-      expect(n2).toBe(1);
-      expect(n3).toBe(1);
-
-      expect(w.getPending().length).toBe(1);
-    }
+    expect(w.getPending().length).toBe(1);
 
     expect(c3.get()).toBe(5);
     expect(n).toBe(2);
