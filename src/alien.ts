@@ -230,6 +230,20 @@ export namespace Signal {
       }
     }
 
+    export function hasSinks(signal: AnySignal) {
+      return signal.watchCount > 0;
+    }
+
+    export function introspectSinks(signal: AnySignal) {
+      const arr: (Computed | subtle.Watcher)[] = [];
+      let sub = signal.subs;
+      while (sub) {
+        arr.push(sub.sub as Computed | subtle.Watcher);
+        sub = sub.nextSub;
+      }
+      return arr;
+    }
+
     export function introspectSources(signal: alien.Subscriber) {
       const arr: AnySignal[] = [];
       let dep = signal.deps;
