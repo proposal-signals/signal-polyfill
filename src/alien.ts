@@ -103,6 +103,9 @@ export namespace Signal {
     }
 
     get() {
+      if (this.flags & alien.SubscriberFlags.Tracking) {
+        throw new Error('Cycles detected');
+      }
       const lastSub = this.subsTail;
       const value = super.get();
       const newSub = this.subsTail;
