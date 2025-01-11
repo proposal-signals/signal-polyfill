@@ -163,7 +163,7 @@ export namespace Signal {
         throw this.currentValue;
       }
 
-      return this.currentValue;
+      return this.currentValue!;
     }
 
     update(): boolean {
@@ -219,6 +219,7 @@ export namespace Signal {
       deps: alien.Link | undefined = undefined;
       depsTail: alien.Link | undefined = undefined;
       flags = alien.SubscriberFlags.None;
+      watchList = new Set<AnySignal>();
 
       constructor(private fn: () => void) {}
 
@@ -241,24 +242,29 @@ export namespace Signal {
 
       watch(...signals: AnySignal[]): void {
         for (const signal of signals) {
-          if (link(signal, this)) {
-            signal.onWatched();
+          if (this.watchList.has(signal)) {
+            continue;
           }
+          this.watchList.add(signal);
+          link(signal, this);
+          signal.onWatched();
         }
         this.flags = alien.SubscriberFlags.None;
       }
 
       unwatch(...signals: AnySignal[]): void {
+        for (const signal of signals) {
+          if (!this.watchList.has(signal)) {
+            continue;
+          }
+          this.watchList.delete(signal);
+          signal.onUnwatched();
+        }
         startTrack(this);
-        let dep = this.deps;
-        while (dep) {
-          if (!signals.includes(dep.dep as AnySignal)) {
+        for (let dep = this.deps; dep !== undefined; dep = dep.nextDep) {
+          if (this.watchList.has(dep.dep as AnySignal)) {
             link(dep.dep, this);
           }
-          dep = dep.nextDep;
-        }
-        for (const signal of signals) {
-          signal.onUnwatched(); // TODO: check if it's watched
         }
         endTrack(this);
       }
@@ -278,20 +284,16 @@ export namespace Signal {
 
     export function introspectSinks(signal: AnySignal) {
       const arr: (Computed | subtle.Watcher)[] = [];
-      let sub = signal.subs;
-      while (sub) {
+      for (let sub = signal.subs; sub !== undefined; sub = sub.nextSub) {
         arr.push(sub.sub as Computed | subtle.Watcher);
-        sub = sub.nextSub;
       }
       return arr;
     }
 
     export function introspectSources(signal: alien.Subscriber) {
       const arr: AnySignal[] = [];
-      let dep = signal.deps;
-      while (dep) {
+      for (let dep = signal.deps; dep !== undefined; dep = dep.nextDep) {
         arr.push(dep.dep as AnySignal);
-        dep = dep.nextDep;
       }
       return arr;
     }
