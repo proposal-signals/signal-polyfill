@@ -11,8 +11,18 @@ export namespace Signal {
       isEffect(sub): sub is subtle.Watcher {
         return sub instanceof subtle.Watcher;
       },
-      notifyEffect(watcher) {
-        watcher.notify();
+      notifyEffect(watcher: subtle.Watcher) {
+        const flags = watcher.flags;
+        watcher.flags = alien.SubscriberFlags.None;
+        if (flags & alien.SubscriberFlags.Dirty) {
+          const prevSub = activeSub;
+          activeSub = WATCHER_PLACEHOLDER;
+          try {
+            watcher.fn();
+          } finally {
+            activeSub = prevSub;
+          }
+        }
       },
       updateComputed(computed) {
         return computed.update();
@@ -115,11 +125,9 @@ export namespace Signal {
     onWatched() {
       if (this.watchCount++ === 0) {
         this.options?.[subtle.watched]?.call(this);
-        let link = this.deps;
-        while (link) {
+        for (let link = this.deps; link !== undefined; link = link.nextDep) {
           const dep = link.dep as AnySignal;
           dep.onWatched();
-          link = link.nextDep;
         }
       }
     }
@@ -127,11 +135,9 @@ export namespace Signal {
     onUnwatched() {
       if (--this.watchCount === 0) {
         this.options?.[subtle.unwatched]?.call(this);
-        let link = this.deps;
-        while (link) {
+        for (let link = this.deps; link !== undefined; link = link.nextDep) {
           const dep = link.dep as AnySignal;
           dep.onUnwatched();
-          link = link.nextDep;
         }
       }
     }
@@ -143,7 +149,6 @@ export namespace Signal {
       if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from computed inside watcher');
       }
-
       if (isDirty(this, this.flags)) {
         if (this.update()) {
           const subs = this.subs;
@@ -158,11 +163,9 @@ export namespace Signal {
           this.onWatched();
         }
       }
-
       if (this.isError) {
         throw this.currentValue;
       }
-
       return this.currentValue!;
     }
 
@@ -196,16 +199,15 @@ export namespace Signal {
             const dep = link.dep as AnySignal;
             dep.onUnwatched();
           }
-        }
-
-        activeSub = prevSub;
-        endTrack(this);
-
-        if (this.watchCount) {
+          activeSub = prevSub;
+          endTrack(this);
           for (let link = this.deps; link !== undefined; link = link.nextDep) {
             const dep = link.dep as AnySignal;
             dep.onWatched();
           }
+        } else {
+          activeSub = prevSub;
+          endTrack(this);
         }
       }
     }
@@ -221,24 +223,7 @@ export namespace Signal {
       flags = alien.SubscriberFlags.None;
       watchList = new Set<AnySignal>();
 
-      constructor(private fn: () => void) {}
-
-      notify() {
-        if (this.flags & alien.SubscriberFlags.Dirty) {
-          this.run();
-        }
-      }
-
-      run() {
-        this.flags = alien.SubscriberFlags.None;
-        const prevSub = activeSub;
-        activeSub = WATCHER_PLACEHOLDER;
-        try {
-          this.fn();
-        } finally {
-          activeSub = prevSub;
-        }
-      }
+      constructor(public fn: () => void) {}
 
       watch(...signals: AnySignal[]): void {
         for (const signal of signals) {
@@ -249,7 +234,6 @@ export namespace Signal {
           link(signal, this);
           signal.onWatched();
         }
-        this.flags = alien.SubscriberFlags.None;
       }
 
       unwatch(...signals: AnySignal[]): void {
@@ -261,9 +245,10 @@ export namespace Signal {
           signal.onUnwatched();
         }
         startTrack(this);
-        for (let dep = this.deps; dep !== undefined; dep = dep.nextDep) {
-          if (this.watchList.has(dep.dep as AnySignal)) {
-            link(dep.dep, this);
+        for (let _link = this.deps; _link !== undefined; _link = _link.nextDep) {
+          const dep = _link.dep as AnySignal;
+          if (this.watchList.has(dep)) {
+            link(dep, this);
           }
         }
         endTrack(this);
@@ -284,16 +269,16 @@ export namespace Signal {
 
     export function introspectSinks(signal: AnySignal) {
       const arr: (Computed | subtle.Watcher)[] = [];
-      for (let sub = signal.subs; sub !== undefined; sub = sub.nextSub) {
-        arr.push(sub.sub as Computed | subtle.Watcher);
+      for (let link = signal.subs; link !== undefined; link = link.nextSub) {
+        arr.push(link.sub as Computed | subtle.Watcher);
       }
       return arr;
     }
 
     export function introspectSources(signal: alien.Subscriber) {
       const arr: AnySignal[] = [];
-      for (let dep = signal.deps; dep !== undefined; dep = dep.nextDep) {
-        arr.push(dep.dep as AnySignal);
+      for (let link = signal.deps; link !== undefined; link = link.nextDep) {
+        arr.push(link.dep as AnySignal);
       }
       return arr;
     }
