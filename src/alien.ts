@@ -1,27 +1,45 @@
 import * as alien from 'alien-signals';
 
-const WATCHER_TRACK_ID = -1;
+const WATCHER_PLACEHOLDER = Symbol('watcher') as any;
 
 export namespace Signal {
-  export const untrack = alien.untrack;
+  const {drainQueuedEffects, endTrack, isDirty, link, propagate, shallowPropagate, startTrack} =
+    alien.createSystem({
+      isComputed(sub): sub is Computed {
+        return sub instanceof Computed;
+      },
+      isEffect(sub): sub is subtle.Watcher {
+        return sub instanceof subtle.Watcher;
+      },
+      notifyEffect(watcher) {
+        watcher.notify();
+      },
+      updateComputed(computed) {
+        return computed.update();
+      },
+    });
 
-  export function batch<T>(fn: () => T): T {
-    alien.startBatch();
+  let activeSub: alien.Subscriber | undefined;
+
+  export function untrack<T>(fn: () => T) {
+    const prevSub = activeSub;
+    activeSub = undefined;
     try {
       return fn();
     } finally {
-      alien.endBatch();
+      activeSub = prevSub;
     }
   }
 
-  export class State<T = any> extends alien.Signal<T> {
+  export class State<T = any> implements alien.Dependency {
+    subs: alien.Link | undefined = undefined;
+    subsTail: alien.Link | undefined = undefined;
     watchCount = 0;
 
     constructor(
-      value: T,
+      private currentValue: T,
       private options?: Options<T>,
     ) {
-      super(value);
       if (options && options.equals) {
         this.equals = options.equals;
       }
@@ -44,41 +62,47 @@ export namespace Signal {
     }
 
     get() {
-      if (alien.activeTrackId === WATCHER_TRACK_ID) {
+      if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from state inside watcher');
       }
-      const lastSub = this.subsTail;
-      const value = super.get();
-      const newSub = this.subsTail;
-      if (lastSub !== newSub && newSub instanceof Computed && newSub.watchCount) {
-        this.onWatched();
+      if (activeSub !== undefined && link(this, activeSub)) {
+        const newSub = this.subsTail!;
+        if (newSub instanceof Computed && newSub.watchCount) {
+          this.onWatched();
+        }
       }
-      return value;
+      return this.currentValue;
     }
 
     set(value: T): void {
-      if (alien.activeTrackId === WATCHER_TRACK_ID) {
+      if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot write to state inside watcher');
       }
       if (!this.equals(this.currentValue, value)) {
         this.currentValue = value;
         const subs = this.subs;
         if (subs !== undefined) {
-          alien.propagate(subs);
+          propagate(subs);
+          drainQueuedEffects();
         }
       }
     }
   }
 
-  export class Computed<T = any> extends alien.Computed<T> {
+  export class Computed<T = any> implements alien.Dependency, alien.Subscriber {
+    subs: alien.Link | undefined = undefined;
+    subsTail: alien.Link | undefined = undefined;
+    deps: alien.Link | undefined = undefined;
+    depsTail: alien.Link | undefined = undefined;
+    flags = alien.SubscriberFlags.Dirty;
     isError = true;
     watchCount = 0;
+    currentValue: T | undefined = undefined;
 
     constructor(
-      getter: () => T,
+      private getter: () => T,
       private options?: Options<T>,
     ) {
-      super(getter);
       if (options && options.equals) {
         this.equals = options.equals;
       }
@@ -116,29 +140,39 @@ export namespace Signal {
       if (this.flags & alien.SubscriberFlags.Tracking) {
         throw new Error('Cycles detected');
       }
-      if (alien.activeTrackId === WATCHER_TRACK_ID) {
+      if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from computed inside watcher');
       }
-      const lastSub = this.subsTail;
-      const value = super.get();
-      const newSub = this.subsTail;
-      if (lastSub !== newSub && newSub instanceof Computed && newSub.watchCount) {
-        this.onWatched();
+
+      if (isDirty(this, this.flags)) {
+        if (this.update()) {
+          const subs = this.subs;
+          if (subs !== undefined) {
+            shallowPropagate(subs);
+          }
+        }
       }
+      if (activeSub !== undefined && link(this, activeSub)) {
+        const newSub = this.subsTail!;
+        if (newSub instanceof Computed && newSub.watchCount) {
+          this.onWatched();
+        }
+      }
+
       if (this.isError) {
-        throw value;
+        throw this.currentValue;
       }
-      return value;
+
+      return this.currentValue;
     }
 
     update(): boolean {
-      const prevSub = alien.activeSub;
-      const prevTrackId = alien.activeTrackId;
-      alien.setActiveSub(this, alien.nextTrackId());
-      alien.startTrack(this);
+      const prevSub = activeSub;
+      activeSub = this;
+      startTrack(this);
+      const oldValue = this.currentValue;
       try {
-        const oldValue = this.currentValue;
-        const newValue = this.getter(oldValue);
+        const newValue = this.getter();
         if (this.isError || !this.equals(oldValue!, newValue)) {
           this.isError = false;
           this.currentValue = newValue;
@@ -146,31 +180,31 @@ export namespace Signal {
         }
         return false;
       } catch (err) {
-        this.isError = true;
-        this.currentValue = err as any;
-        return true;
-      } finally {
-        let removeDeps!: AnySignal[];
-        if (this.watchCount) {
-          removeDeps = [];
-          let link = this.depsTail ? this.depsTail.nextDep : this.deps;
-          while (link) {
-            const dep = link.dep as AnySignal;
-            removeDeps.push(dep);
-            link = link.nextDep;
-          }
+        if (!this.isError || !this.equals(oldValue!, err as any)) {
+          this.isError = true;
+          this.currentValue = err as any;
+          return true;
         }
-        alien.setActiveSub(prevSub, prevTrackId);
-        alien.endTrack(this);
+        return false;
+      } finally {
         if (this.watchCount) {
-          for (const dep of removeDeps) {
+          for (
+            let link = this.depsTail !== undefined ? this.depsTail.nextDep : this.deps;
+            link !== undefined;
+            link = link.nextDep
+          ) {
+            const dep = link.dep as AnySignal;
             dep.onUnwatched();
           }
-          let link = this.deps;
-          while (link) {
+        }
+
+        activeSub = prevSub;
+        endTrack(this);
+
+        if (this.watchCount) {
+          for (let link = this.deps; link !== undefined; link = link.nextDep) {
             const dep = link.dep as AnySignal;
             dep.onWatched();
-            link = link.nextDep;
           }
         }
       }
@@ -180,56 +214,53 @@ export namespace Signal {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type AnySignal<T = any> = State<T> | Computed<T>;
 
-  const PENDING = 1 << 5;
-
   export namespace subtle {
-    export class Watcher extends alien.Effect {
-      constructor(fn: () => void) {
-        super(fn);
-      }
+    export class Watcher implements alien.Subscriber {
+      deps: alien.Link | undefined = undefined;
+      depsTail: alien.Link | undefined = undefined;
+      flags = alien.SubscriberFlags.None;
+
+      constructor(private fn: () => void) {}
 
       notify() {
-        let flags = this.flags;
-        if (flags & alien.SubscriberFlags.Dirty) {
+        if (this.flags & alien.SubscriberFlags.Dirty) {
           this.run();
-        } else if (flags & alien.SubscriberFlags.ToCheckDirty) {
-          this.flags = PENDING;
         }
       }
 
       run() {
         this.flags = alien.SubscriberFlags.None;
-        const prevSub = alien.activeSub;
-        const prevTrackId = alien.activeTrackId;
-        alien.setActiveSub(undefined, WATCHER_TRACK_ID);
+        const prevSub = activeSub;
+        activeSub = WATCHER_PLACEHOLDER;
         try {
           this.fn();
         } finally {
-          alien.setActiveSub(prevSub, prevTrackId);
+          activeSub = prevSub;
         }
       }
 
       watch(...signals: AnySignal[]): void {
         for (const signal of signals) {
-          alien.link(signal, this);
-          signal.onWatched();
+          if (link(signal, this)) {
+            signal.onWatched();
+          }
         }
         this.flags = alien.SubscriberFlags.None;
       }
 
       unwatch(...signals: AnySignal[]): void {
-        alien.startTrack(this);
+        startTrack(this);
         let dep = this.deps;
         while (dep) {
           if (!signals.includes(dep.dep as AnySignal)) {
-            alien.link(dep.dep, this);
+            link(dep.dep, this);
           }
           dep = dep.nextDep;
         }
         for (const signal of signals) {
-          signal.onUnwatched();
+          signal.onUnwatched(); // TODO: check if it's watched
         }
-        alien.endTrack(this);
+        endTrack(this);
       }
 
       getPending() {
