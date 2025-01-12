@@ -202,7 +202,6 @@ export namespace Signal {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type AnySignal<T = any> = State<T> | Computed<T>;
 
   export namespace subtle {
