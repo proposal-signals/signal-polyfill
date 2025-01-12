@@ -19,13 +19,7 @@ export namespace Signal {
         },
         notify(watcher: subtle.Watcher) {
           if (watcher.flags & alien.SubscriberFlags.Dirty) {
-            const prevSub = activeSub;
-            activeSub = WATCHER_PLACEHOLDER;
-            try {
-              watcher.fn();
-            } finally {
-              activeSub = prevSub;
-            }
+            watcher.run();
             return true;
           }
           return false;
@@ -201,16 +195,9 @@ export namespace Signal {
             const dep = link.dep as AnySignal;
             dep.onUnwatched();
           }
-          activeSub = prevSub;
-          endTrack(this);
-          for (let link = this.deps; link !== undefined; link = link.nextDep) {
-            const dep = link.dep as AnySignal;
-            dep.onWatched();
-          }
-        } else {
-          activeSub = prevSub;
-          endTrack(this);
         }
+        activeSub = prevSub;
+        endTrack(this);
       }
     }
   }
@@ -225,7 +212,17 @@ export namespace Signal {
       flags = alien.SubscriberFlags.None;
       watchList = new Set<AnySignal>();
 
-      constructor(public fn: () => void) {}
+      constructor(private fn: () => void) {}
+
+      run() {
+        const prevSub = activeSub;
+        activeSub = WATCHER_PLACEHOLDER;
+        try {
+          this.fn();
+        } finally {
+          activeSub = prevSub;
+        }
+      }
 
       watch(...signals: AnySignal[]): void {
         for (const signal of signals) {
