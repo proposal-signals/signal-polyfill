@@ -143,13 +143,13 @@ export namespace Signal {
     }
 
     get() {
-      if (this.flags & alien.SubscriberFlags.Tracking) {
-        throw new Error('Cycles detected');
-      }
       if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from computed inside watcher');
       }
       const flags = this.flags;
+      if (flags & alien.SubscriberFlags.Tracking) {
+        throw new Error('Cycles detected');
+      }
       if (flags) {
         processComputedUpdate(this, flags);
       }
