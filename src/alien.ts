@@ -73,10 +73,12 @@ export namespace Signal {
       if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from state inside watcher');
       }
-      if (activeSub !== undefined && link(this, activeSub)) {
-        const newSub = this.subsTail!;
-        if (newSub instanceof Computed && newSub.watchCount) {
-          this.onWatched();
+      if (activeSub !== undefined) {
+        if (link(this, activeSub)) {
+          const newSub = this.subsTail!;
+          if (newSub instanceof Computed && newSub.watchCount) {
+            this.onWatched();
+          }
         }
       }
       return this.currentValue;
