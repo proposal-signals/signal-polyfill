@@ -1,8 +1,8 @@
 import * as alien from 'alien-signals';
 
-const WATCHER_PLACEHOLDER = Symbol('watcher') as any;
-
 export namespace Signal {
+  const WATCHER_PLACEHOLDER = Symbol('watcher') as any;
+
   const {endTrack, link, propagate, startTrack, processQueuedEffects, processComputedUpdate} =
     alien.createSystem({
       computed: {
