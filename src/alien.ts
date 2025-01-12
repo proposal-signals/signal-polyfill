@@ -3,29 +3,33 @@ import * as alien from 'alien-signals';
 const WATCHER_PLACEHOLDER = Symbol('watcher') as any;
 
 export namespace Signal {
-  const {drainQueuedEffects, endTrack, isDirty, link, propagate, shallowPropagate, startTrack} =
+  const {endTrack, link, propagate, startTrack, processQueuedEffects, processComputedUpdate} =
     alien.createSystem({
-      isComputed(sub): sub is Computed {
-        return sub instanceof Computed;
+      computed: {
+        is(sub): sub is Computed {
+          return sub instanceof Computed;
+        },
+        update(computed) {
+          return computed.update();
+        },
       },
-      isEffect(sub): sub is subtle.Watcher {
-        return sub instanceof subtle.Watcher;
-      },
-      notifyEffect(watcher: subtle.Watcher) {
-        const flags = watcher.flags;
-        watcher.flags = alien.SubscriberFlags.None;
-        if (flags & alien.SubscriberFlags.Dirty) {
-          const prevSub = activeSub;
-          activeSub = WATCHER_PLACEHOLDER;
-          try {
-            watcher.fn();
-          } finally {
-            activeSub = prevSub;
+      effect: {
+        is(sub): sub is subtle.Watcher {
+          return sub instanceof subtle.Watcher;
+        },
+        notify(watcher: subtle.Watcher) {
+          if (watcher.flags & alien.SubscriberFlags.Dirty) {
+            const prevSub = activeSub;
+            activeSub = WATCHER_PLACEHOLDER;
+            try {
+              watcher.fn();
+            } finally {
+              activeSub = prevSub;
+            }
+            return true;
           }
-        }
-      },
-      updateComputed(computed) {
-        return computed.update();
+          return false;
+        },
       },
     });
 
@@ -50,7 +54,7 @@ export namespace Signal {
       private currentValue: T,
       private options?: Options<T>,
     ) {
-      if (options && options.equals) {
+      if (options?.equals !== undefined) {
         this.equals = options.equals;
       }
     }
@@ -93,7 +97,7 @@ export namespace Signal {
         const subs = this.subs;
         if (subs !== undefined) {
           propagate(subs);
-          drainQueuedEffects();
+          processQueuedEffects();
         }
       }
     }
@@ -113,7 +117,7 @@ export namespace Signal {
       private getter: () => T,
       private options?: Options<T>,
     ) {
-      if (options && options.equals) {
+      if (options?.equals !== undefined) {
         this.equals = options.equals;
       }
     }
@@ -149,18 +153,16 @@ export namespace Signal {
       if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from computed inside watcher');
       }
-      if (isDirty(this, this.flags)) {
-        if (this.update()) {
-          const subs = this.subs;
-          if (subs !== undefined) {
-            shallowPropagate(subs);
-          }
-        }
+      const flags = this.flags;
+      if (flags) {
+        processComputedUpdate(this, flags);
       }
-      if (activeSub !== undefined && link(this, activeSub)) {
-        const newSub = this.subsTail!;
-        if (newSub instanceof Computed && newSub.watchCount) {
-          this.onWatched();
+      if (activeSub !== undefined) {
+        if (link(this, activeSub)) {
+          const newSub = this.subsTail!;
+          if (newSub instanceof Computed && newSub.watchCount) {
+            this.onWatched();
+          }
         }
       }
       if (this.isError) {
@@ -258,7 +260,7 @@ export namespace Signal {
         return introspectSources(this).filter(
           (source) =>
             source instanceof Computed &&
-            source.flags & (alien.SubscriberFlags.ToCheckDirty | alien.SubscriberFlags.Dirty),
+            source.flags & (alien.SubscriberFlags.CheckRequired | alien.SubscriberFlags.Dirty),
         );
       }
     }
