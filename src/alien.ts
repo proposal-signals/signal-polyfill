@@ -75,7 +75,7 @@ export namespace Signal {
       }
       if (activeSub !== undefined) {
         if (link(this, activeSub)) {
-          const newSub = this.subsTail!;
+          const newSub = this.subsTail!.sub;
           if (newSub instanceof Computed && newSub.watchCount) {
             this.onWatched();
           }
@@ -155,7 +155,7 @@ export namespace Signal {
       }
       if (activeSub !== undefined) {
         if (link(this, activeSub)) {
-          const newSub = this.subsTail!;
+          const newSub = this.subsTail!.sub;
           if (newSub instanceof Computed && newSub.watchCount) {
             this.onWatched();
           }
