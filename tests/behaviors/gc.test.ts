@@ -11,6 +11,9 @@ describe('GC', () => {
 
         await gc();
         expect(c1Ref.deref()).toBe(undefined);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+        expect(s1.subs).toBe(undefined);
     });
 });
 
