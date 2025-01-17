@@ -44,7 +44,7 @@ export namespace Signal {
     #brand() {}
 
     static {
-      isState = (s) => #brand in s;
+      isState = (s) => typeof s === "object" && #brand in s;
     }
 
     constructor(initialValue: T, options: Signal.Options<T> = {}) {
@@ -84,7 +84,7 @@ export namespace Signal {
     #brand() {}
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static {
-      isComputed = (c: any) => #brand in c;
+      isComputed = (c: any) => typeof c === "object" && #brand in c;
     }
 
     // Create a Signal which evaluates to the value returned by the callback.
