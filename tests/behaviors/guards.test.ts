@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Signal } from "../../src/wrapper.js";
+import {describe, expect, it} from 'vitest';
+import {Signal} from '../../src/wrapper.js';
 
-describe("Guards", () => {
-  it("should work with Signals", () => {
+describe('Guards', () => {
+  it('should work with Signals', () => {
     const state = new Signal.State(1);
     const computed = new Signal.Computed(() => state.get() * 2);
     expect(Signal.isState(state)).toBe(true);
