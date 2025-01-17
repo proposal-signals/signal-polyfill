@@ -1,5 +1,23 @@
 # Changelog
 
+## Release (2025-01-17)
+
+signal-polyfill 0.2.2 (patch)
+
+#### :bug: Bug Fix
+* `signal-polyfill`
+  * [#42](https://github.com/proposal-signals/signal-polyfill/pull/42) fix assignment of subtypes (#7) ([@Gvozd](https://github.com/Gvozd))
+  * [#45](https://github.com/proposal-signals/signal-polyfill/pull/45) fix isState / isComputed guards to allow all parameter types ([@fcrozatier](https://github.com/fcrozatier))
+
+#### :house: Internal
+* `signal-polyfill`
+  * [#37](https://github.com/proposal-signals/signal-polyfill/pull/37) Add type-tests to ensure consistent public API expectations ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 3
+- Frédéric Crozatier ([@fcrozatier](https://github.com/fcrozatier))
+- Gvozd ([@Gvozd](https://github.com/Gvozd))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-10-09)
 
 signal-polyfill 0.2.1 (patch)
