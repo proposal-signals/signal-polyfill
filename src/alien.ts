@@ -217,11 +217,17 @@ export namespace Signal {
       }
 
       getPending() {
-        return introspectSources(this).filter(
-          (source) =>
+        const arr: AnySignal[] = [];
+        for (let link = this.deps; link !== undefined; link = link.nextDep) {
+          const source = link.dep;
+          if (
             source instanceof Computed &&
-            source.flags & (alien.SubscriberFlags.PendingComputed | alien.SubscriberFlags.Dirty),
-        );
+            source.flags & (alien.SubscriberFlags.PendingComputed | alien.SubscriberFlags.Dirty)
+          ) {
+            arr.push(link.dep as AnySignal);
+          }
+        }
+        return arr;
       }
     }
 
