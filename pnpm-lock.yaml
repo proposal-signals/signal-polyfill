@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       alien-signals:
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0-alpha.2
+        version: 1.1.0-alpha.2
     devDependencies:
       '@types/node':
         specifier: ^20.11.25
@@ -644,8 +644,8 @@ packages:
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
 
-  alien-signals@1.0.0:
-    resolution: {integrity: sha512-Fd2sYMdyjWD6VKxeewCYHXsIYAiELGMtQzGJ6vyxpxtQ1exXYiNTynSqGllkk+mOqhtBFYcC1Qvb49FbCSvsQw==}
+  alien-signals@1.1.0-alpha.2:
+    resolution: {integrity: sha512-CG7oNBPrr2jLfo5OGBBtSuA5dfKtWwkSIF9EMxIwNBamtoJZleGtBucwtzQeoNfqpMu9joagds520IJ//REnsA==}
 
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
@@ -3132,7 +3132,7 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  alien-signals@1.0.0: {}
+  alien-signals@1.1.0-alpha.2: {}
 
   ansi-regex@5.0.1: {}
 
