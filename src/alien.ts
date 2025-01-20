@@ -187,7 +187,7 @@ export namespace Signal {
       depsTail: alien.Link | undefined = undefined;
       flags = alien.SubscriberFlags.Effect;
 
-      constructor(private fn: () => void) { }
+      constructor(private fn: () => void) {}
 
       run() {
         const prevSub = activeSub;
