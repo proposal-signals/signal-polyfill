@@ -4,22 +4,29 @@ export namespace Signal {
   const WATCHER_PLACEHOLDER = Symbol('watcher') as any;
 
   const {
-    endTracking,
     link,
+    warming,
+    cooling,
     propagate,
+    checkDirty,
+    endTracking,
     startTracking,
-    processComputedUpdate,
     processEffectNotifications,
   } = alien.createReactiveSystem({
-    updateComputed(computed: Computed) {
-      return computed.update();
+    computed: {
+      update(computed: Computed) {
+        return computed.update();
+      },
+      onUnwatched(computed) {
+        cooling(computed);
+      },
     },
-    notifyEffect(watcher: subtle.Watcher) {
-      if (watcher.flags & alien.SubscriberFlags.Dirty) {
-        watcher.run();
-        return true;
-      }
-      return false;
+    effect: {
+      notify(watcher: subtle.Watcher) {
+        if (watcher.flags & alien.SubscriberFlags.Dirty) {
+          watcher.run();
+        }
+      },
     },
   });
   const nursery: alien.Subscriber = {
@@ -151,12 +158,22 @@ export namespace Signal {
       if (activeSub === WATCHER_PLACEHOLDER) {
         throw new Error('Cannot read from computed inside watcher');
       }
-      const flags = this.flags;
+      let flags = this.flags;
       if (flags & alien.SubscriberFlags.Tracking) {
         throw new Error('Cycles detected');
       }
-      if (flags & (alien.SubscriberFlags.Dirty | alien.SubscriberFlags.PendingComputed)) {
-        processComputedUpdate(this, flags);
+      if (flags & alien.SubscriberFlags.Cold) {
+        warming(this);
+        flags = this.flags | alien.SubscriberFlags.Pending;
+      }
+      if (flags & alien.SubscriberFlags.Dirty) {
+        this.update();
+      } else if (flags & alien.SubscriberFlags.Pending) {
+        if (checkDirty(this.deps!)) {
+          this.update();
+        } else {
+          this.flags &= ~alien.SubscriberFlags.Pending;
+        }
       }
       if (activeSub !== undefined) {
         const newSub = link(this, activeSub)?.sub;
@@ -231,7 +248,7 @@ export namespace Signal {
       flags = alien.SubscriberFlags.Effect;
       watchList = new Set<AnySignal>();
 
-      constructor(private fn: () => void) {}
+      constructor(private fn: () => void) { }
 
       run() {
         const prevSub = activeSub;
@@ -278,7 +295,7 @@ export namespace Signal {
           const source = link.dep;
           if (
             source instanceof Computed &&
-            source.flags & (alien.SubscriberFlags.PendingComputed | alien.SubscriberFlags.Dirty)
+            source.flags & (alien.SubscriberFlags.Dirty | alien.SubscriberFlags.Pending)
           ) {
             arr.push(link.dep as AnySignal);
           }
