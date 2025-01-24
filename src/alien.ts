@@ -164,7 +164,7 @@ export namespace Signal {
       }
       if (flags & alien.SubscriberFlags.Cold) {
         warming(this);
-        flags = this.flags | alien.SubscriberFlags.Pending;
+        flags |= alien.SubscriberFlags.Pending;
       }
       if (flags & alien.SubscriberFlags.Dirty) {
         this.update();
