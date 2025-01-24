@@ -22,7 +22,13 @@ export namespace Signal {
       return false;
     },
   });
+  const nursery: alien.Subscriber = {
+    flags: alien.SubscriberFlags.None,
+    deps: undefined,
+    depsTail: undefined,
+  };
 
+  let triggingCooling = false;
   let activeSub: alien.Subscriber | undefined;
 
   export function untrack<T>(fn: () => T) {
@@ -38,6 +44,7 @@ export namespace Signal {
   export class State<T = any> implements alien.Dependency {
     subs: alien.Link | undefined = undefined;
     subsTail: alien.Link | undefined = undefined;
+    version = 0;
     watchCount = 0;
 
     constructor(
@@ -85,6 +92,7 @@ export namespace Signal {
         throw new Error('Cannot write to state inside watcher');
       }
       if (!this.equals(this.currentValue, value)) {
+        this.version++;
         this.currentValue = value;
         const subs = this.subs;
         if (subs !== undefined) {
@@ -102,6 +110,7 @@ export namespace Signal {
     depsTail: alien.Link | undefined = undefined;
     flags = alien.SubscriberFlags.Computed | alien.SubscriberFlags.Dirty;
     isError = true;
+    version = 0;
     watchCount = 0;
     currentValue: T | undefined = undefined;
 
@@ -154,6 +163,12 @@ export namespace Signal {
         if (newSub instanceof Computed && newSub.watchCount) {
           this.onWatched();
         }
+      } else if (this.subs === undefined) {
+        link(this, nursery);
+        if (!triggingCooling) {
+          triggingCooling = true;
+          triggerCooling();
+        }
       }
       if (this.isError) {
         throw this.currentValue;
@@ -170,6 +185,7 @@ export namespace Signal {
         const newValue = this.getter();
         if (this.isError || !this.equals(oldValue!, newValue)) {
           this.isError = false;
+          this.version++;
           this.currentValue = newValue;
           return true;
         }
@@ -177,6 +193,7 @@ export namespace Signal {
       } catch (err) {
         if (!this.isError || !this.equals(oldValue!, err as any)) {
           this.isError = true;
+          this.version++;
           this.currentValue = err as any;
           return true;
         }
@@ -196,6 +213,13 @@ export namespace Signal {
         endTracking(this);
       }
     }
+  }
+
+  async function triggerCooling() {
+    await Promise.resolve(); // TODO: Confirm the scheduling logic
+    triggingCooling = false;
+    startTracking(nursery);
+    endTracking(nursery);
   }
 
   type AnySignal<T = any> = State<T> | Computed<T>;
