@@ -54,4 +54,28 @@ describe('Signal.State', () => {
       expect(calls).toBe(2);
     });
   });
+
+  describe('Signal.State Initialization', () => {
+    it('should initialize with a number', () => {
+      const state = new Signal.State(42);
+      expect(state.get()).toBe(42);
+    });
+
+    it('should initialize with a string', () => {
+      const state = new Signal.State('Hello');
+      expect(state.get()).toBe('Hello');
+    });
+
+    it('should initialize with an object', () => {
+      const obj = { key: 'value' };
+      const state = new Signal.State(obj);
+      expect(state.get()).toEqual(obj);
+    });
+
+    it('should initialize with an array', () => {
+      const arr = [1, 2, 3];
+      const state = new Signal.State(arr);
+      expect(state.get()).toEqual(arr);
+    });
+  });
 });
