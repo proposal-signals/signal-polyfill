@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {Signal} from '../../src/wrapper.js';
+import {Signal} from '../../src/alien.js';
 
 describe('Errors', () => {
   it('are cached by computed signals', () => {

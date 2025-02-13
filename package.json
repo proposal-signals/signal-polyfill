@@ -43,6 +43,9 @@
     "vitest": "^1.4.0",
     "webdriverio": "^8.36.1"
   },
+  "dependencies": {
+    "alien-signals": "2.0.0-alpha.0"
+  },
   "volta": {
     "node": "22.0.0",
     "pnpm": "9.0.6"
