@@ -35,6 +35,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: wyvox/action-setup-pnpm@v3
