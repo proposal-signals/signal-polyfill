@@ -25,9 +25,12 @@
     "lint:types": "tsc --noEmit",
     "lint:prettier": "prettier --check .",
     "lint:fix": "prettier --write .",
-    "test": "vitest"
+    "test": "vitest",
+    "benchmarks": "esbuild tests/benchmarks/benchmarks.ts --bundle --format=esm --platform=node --outdir=build --sourcemap=external && node --expose-gc ./build/benchmarks.js"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
+    "js-reactivity-benchmark": "divdavem/js-reactivity-benchmark#77a55ade586a1aac5a67265a4892ff9ae7902500",
     "@types/node": "^20.11.25",
     "@vitest/browser": "^1.5.3",
     "concurrently": "^9.0.1",

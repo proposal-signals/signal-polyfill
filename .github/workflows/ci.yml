@@ -29,3 +29,22 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm vitest ${{ matrix.testenv.args }}
+  benchmarks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wyvox/action-setup-pnpm@v3
+      - run: pnpm install
+      - run: pnpm benchmarks
+      - uses: benchmark-action/github-action-benchmark@d48d326b4ca9ba73ca0cd0d59f108f9e02a381c7 #v1.20.4
+        with:
+          name: Benchmarks
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmarks.json
+          auto-push: ${{ github.event_name == 'push' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          summary-always: true
