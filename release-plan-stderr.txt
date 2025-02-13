@@ -1,0 +1,9 @@
+(node:2084) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+# Unlabeled Changes
+
+* `signal-polyfill`
+  * [#40](https://github.com/proposal-signals/signal-polyfill/pull/40) Port tests from different signal implementations ([@omfj](https://github.com/omfj))
+
+
+*Cannot plan release until the above changes are labeled*.
