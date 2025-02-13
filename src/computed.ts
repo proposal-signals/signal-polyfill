@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {defaultEquals, ValueEqualityComparer} from './equality.js';
+import {defaultEquals, ValueEqualityFn} from './equality.js';
 import {
   consumerAfterComputation,
   consumerBeforeComputation,
@@ -22,7 +22,7 @@ import {
  *
  * `Computed`s are both producers and consumers of reactivity.
  */
-export interface ComputedNode<T> extends ReactiveNode, ValueEqualityComparer<T> {
+export interface ComputedNode<T> extends ReactiveNode {
   /**
    * Current value of the computation, or one of the sentinel values above (`UNSET`, `COMPUTING`,
    * `ERROR`).
@@ -39,6 +39,8 @@ export interface ComputedNode<T> extends ReactiveNode, ValueEqualityComparer<T> 
    * The computation function which will produce a new value.
    */
   computation: () => T;
+
+  equal: ValueEqualityFn<T>;
 }
 
 export type ComputedGetter<T> = (() => T) & {
