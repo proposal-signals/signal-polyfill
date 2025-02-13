@@ -29,6 +29,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm vitest ${{ matrix.testenv.args }}
+
   benchmarks:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -48,3 +49,22 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-alert: true
           summary-always: true
+
+## 
+# NOTE: in ration is <1, the performance has improved.
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            ## Benchmarks[^note]
+            
+            Results for the latest run for this branch:
+
+            https://github.com/proposal-signals/signal-polyfill/actions/runs/${{ github.run_id }}
+
+            ---------------
+
+            Compare with `main` over time:
+
+            https://proposal-signals.github.io/signal-polyfill/dev/bench/
+
+            [^note]: When the ratio is < 1, performance has improved in the PR.
