@@ -67,7 +67,7 @@ describe('Signal.State', () => {
     });
 
     it('should initialize with an object', () => {
-      const obj = { key: 'value' };
+      const obj = {key: 'value'};
       const state = new Signal.State(obj);
       expect(state.get()).toEqual(obj);
     });
