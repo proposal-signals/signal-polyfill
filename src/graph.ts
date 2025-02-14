@@ -18,7 +18,7 @@ declare const ngDevMode: boolean | undefined;
 let activeConsumer: ReactiveNode | null = null;
 let inNotificationPhase = false;
 
-type Version = number & {__brand: 'Version'};
+export type Version = number & {__brand: 'Version'};
 
 /**
  * Global epoch counter. Incremented whenever a source signal is set.
@@ -55,11 +55,13 @@ export function isReactive(value: unknown): value is Reactive {
 }
 
 export const REACTIVE_NODE: ReactiveNode = {
+  value: undefined,
   version: 0 as Version,
   lastCleanEpoch: 0 as Version,
   dirty: false,
   producerNode: undefined,
   producerLastReadVersion: undefined,
+  producerLastReadValue: undefined,
   producerIndexOfThis: undefined,
   nextProducerIndex: 0,
   liveConsumerNode: undefined,
@@ -68,6 +70,7 @@ export const REACTIVE_NODE: ReactiveNode = {
   consumerIsAlwaysLive: false,
   producerMustRecompute: () => false,
   producerRecomputeValue: () => {},
+  producerEquals: () => false,
   consumerMarkedDirty: () => {},
   consumerOnSignalRead: () => {},
 };
@@ -85,6 +88,8 @@ export const REACTIVE_NODE: ReactiveNode = {
  * A `ReactiveNode` may be both a producer and consumer.
  */
 export interface ReactiveNode {
+  value: unknown;
+
   /**
    * Version of the value that this node produces.
    *
@@ -122,6 +127,13 @@ export interface ReactiveNode {
    * Uses the same indices as the `producerNode` and `producerIndexOfThis` arrays.
    */
   producerLastReadVersion: Version[] | undefined;
+
+  /**
+   * Value last read by a given producer.
+   *
+   * Uses the same indices as the `producerNode`, `producerLastReadVersion` and `producerIndexOfThis` arrays.
+   */
+  producerLastReadValue: unknown[] | undefined;
 
   /**
    * Index of `this` (consumer) in each producer's `liveConsumers` array.
@@ -173,6 +185,7 @@ export interface ReactiveNode {
    */
   producerMustRecompute(node: unknown): boolean;
   producerRecomputeValue(node: unknown): void;
+  producerEquals(node: unknown, value: unknown, valueVersion: Version): boolean;
   consumerMarkedDirty(this: unknown): void;
 
   /**
@@ -201,6 +214,7 @@ interface ConsumerNode extends ReactiveNode {
   producerNode: NonNullable<ReactiveNode['producerNode']>;
   producerIndexOfThis: NonNullable<ReactiveNode['producerIndexOfThis']>;
   producerLastReadVersion: NonNullable<ReactiveNode['producerLastReadVersion']>;
+  producerLastReadValue: NonNullable<ReactiveNode['producerLastReadValue']>;
 }
 
 interface ProducerNode extends ReactiveNode {
@@ -260,6 +274,7 @@ export function producerAccessed(node: ReactiveNode): void {
       : 0;
   }
   activeConsumer.producerLastReadVersion[idx] = node.version;
+  activeConsumer.producerLastReadValue[idx] = node.value;
 }
 
 /**
@@ -360,7 +375,8 @@ export function consumerAfterComputation(
     !node ||
     node.producerNode === undefined ||
     node.producerIndexOfThis === undefined ||
-    node.producerLastReadVersion === undefined
+    node.producerLastReadVersion === undefined ||
+    node.producerLastReadValue === undefined
   ) {
     return;
   }
@@ -379,6 +395,7 @@ export function consumerAfterComputation(
   while (node.producerNode.length > node.nextProducerIndex) {
     node.producerNode.pop();
     node.producerLastReadVersion.pop();
+    node.producerLastReadValue.pop();
     node.producerIndexOfThis.pop();
   }
 }
@@ -394,21 +411,19 @@ export function consumerPollProducersForChange(node: ReactiveNode): boolean {
   for (let i = 0; i < node.producerNode.length; i++) {
     const producer = node.producerNode[i];
     const seenVersion = node.producerLastReadVersion[i];
+    const seenValue = node.producerLastReadValue[i];
 
-    // First check the versions. A mismatch means that the producer's value is known to have
-    // changed since the last time we read it.
-    if (seenVersion !== producer.version) {
-      return true;
-    }
-
-    // The producer's version is the same as the last time we read it, but it might itself be
-    // stale. Force the producer to recompute its version (calculating a new value if necessary).
+    // Force the producer to recompute its version (calculating a new value if necessary).
     producerUpdateValueVersion(producer);
 
-    // Now when we do this check, `producer.version` is guaranteed to be up to date, so if the
-    // versions still match then it has not changed since the last time we read it.
+    // If the producer's version has changed since we last read it, then we need to recompute.
     if (seenVersion !== producer.version) {
-      return true;
+      if (producer.producerEquals(producer, seenValue, seenVersion)) {
+        node.producerLastReadVersion[i] = producer.version;
+        node.producerLastReadValue[i] = producer.value;
+      } else {
+        return true;
+      }
     }
   }
 
@@ -430,6 +445,7 @@ export function consumerDestroy(node: ReactiveNode): void {
   // Truncate all the arrays to drop all connection from this node to the graph.
   node.producerNode.length =
     node.producerLastReadVersion.length =
+    node.producerLastReadValue.length =
     node.producerIndexOfThis.length =
       0;
   if (node.liveConsumerNode) {
@@ -512,6 +528,7 @@ export function assertConsumerNode(node: ReactiveNode): asserts node is Consumer
   node.producerNode ??= [];
   node.producerIndexOfThis ??= [];
   node.producerLastReadVersion ??= [];
+  node.producerLastReadValue ??= [];
 }
 
 export function assertProducerNode(node: ReactiveNode): asserts node is ProducerNode {
