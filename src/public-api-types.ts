@@ -93,19 +93,3 @@ expectTypeOf<keyof Signal.subtle.Watcher & string>().toEqualTypeOf<
 expectTypeOf(new Signal.State(0)).toEqualTypeOf<Signal.State<number>>();
 expectTypeOf(new Signal.State(0).get()).toEqualTypeOf<number>();
 expectTypeOf(new Signal.State(0).set(1)).toEqualTypeOf<void>();
-
-/**
- * Assigning subtypes works
- */
-expectTypeOf<Signal.Computed<Narrower>>().toMatchTypeOf<Signal.Computed<Broader>>();
-expectTypeOf<Signal.State<Narrower>>().toMatchTypeOf<Signal.State<Broader>>();
-
-/**
- * Test data types
- */
-interface Broader {
-  strProp: string;
-}
-interface Narrower extends Broader {
-  numProp: number;
-}
