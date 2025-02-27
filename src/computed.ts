@@ -6,6 +6,11 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import {
+  Consumer as InteropConsumer,
+  Signal as InteropSignal,
+  setActiveConsumer,
+} from './interop_lib';
 import {defaultEquals, ValueEqualityComparer} from './equality.js';
 import {
   consumerAfterComputation,
@@ -16,13 +21,18 @@ import {
   ReactiveNode,
   SIGNAL,
 } from './graph.js';
+import {CONSUMER_NODE, PRODUCER_NODE} from './interop';
 
 /**
  * A computation, which derives a value from a declarative reactive expression.
  *
  * `Computed`s are both producers and consumers of reactivity.
  */
-export interface ComputedNode<T> extends ReactiveNode, ValueEqualityComparer<T> {
+export interface ComputedNode<T>
+  extends ReactiveNode,
+    ValueEqualityComparer<T>,
+    InteropConsumer,
+    InteropSignal<T> {
   /**
    * Current value of the computation, or one of the sentinel values above (`UNSET`, `COMPUTING`,
    * `ERROR`).
@@ -97,10 +107,19 @@ const ERRORED: any = /* @__PURE__ */ Symbol('ERRORED');
 const COMPUTED_NODE = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
+    ...PRODUCER_NODE,
+    ...CONSUMER_NODE,
     value: UNSET,
     dirty: true,
     error: null,
     equal: defaultEquals,
+
+    producerValue: (node: ComputedNode<unknown>) => {
+      if (node.value === ERRORED) {
+        throw node.error;
+      }
+      return node.value;
+    },
 
     producerMustRecompute(node: ComputedNode<unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the

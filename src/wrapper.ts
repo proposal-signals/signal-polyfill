@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
+import {Consumer, getActiveConsumer, setActiveConsumer} from './interop_lib.js';
 import {computedGet, createComputed, type ComputedNode} from './computed.js';
 import {
   SIGNAL,
-  getActiveConsumer,
   isInNotificationPhase,
   producerAccessed,
   assertConsumerNode,
-  setActiveConsumer,
   REACTIVE_NODE,
   type ReactiveNode,
   assertProducerNode,
   producerRemoveLiveConsumerAtIndex,
 } from './graph.js';
 import {createSignal, signalGetFn, signalSetFn, type SignalNode} from './signal.js';
+import {CONSUMER_NODE} from './interop.js';
 
 const NODE: unique symbol = Symbol('node');
 
@@ -171,8 +171,10 @@ export namespace Signal {
       return producerNode.length > 0;
     }
 
+    const WATCH_NODE = {...REACTIVE_NODE, ...CONSUMER_NODE};
+
     export class Watcher {
-      readonly [NODE]: ReactiveNode;
+      readonly [NODE]: ReactiveNode & Consumer;
 
       #brand() {}
       static {
@@ -183,7 +185,7 @@ export namespace Signal {
       // if it hasn't already been called since the last `watch` call.
       // No signals may be read or written during the notify.
       constructor(notify: (this: Watcher) => void) {
-        let node = Object.create(REACTIVE_NODE);
+        let node = Object.create(WATCH_NODE);
         node.wrapper = this;
         node.consumerMarkedDirty = notify;
         node.consumerIsAlwaysLive = true;
@@ -264,7 +266,7 @@ export namespace Signal {
     }
 
     export function currentComputed(): Computed<any> | undefined {
-      return getActiveConsumer()?.wrapper;
+      return (getActiveConsumer() as any)?.wrapper;
     }
 
     // Hooks to observe being watched or no longer watched
