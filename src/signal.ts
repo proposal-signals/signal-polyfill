@@ -6,6 +6,8 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import {beginBatch, Signal as InteropSignal} from './interop_lib';
+import {PRODUCER_NODE} from './interop';
 import {defaultEquals, ValueEqualityComparer} from './equality.js';
 import {throwInvalidWriteToSignalError} from './errors.js';
 import {
@@ -30,7 +32,7 @@ declare const ngDevMode: boolean | undefined;
  */
 let postSignalSetFn: (() => void) | null = null;
 
-export interface SignalNode<T> extends ReactiveNode, ValueEqualityComparer<T> {
+export interface SignalNode<T> extends ReactiveNode, ValueEqualityComparer<T>, InteropSignal<T> {
   value: T;
 }
 
@@ -92,14 +94,25 @@ export function signalUpdateFn<T>(node: SignalNode<T>, updater: (value: T) => T)
 export const SIGNAL_NODE: SignalNode<unknown> = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
+    ...PRODUCER_NODE,
     equal: defaultEquals,
     value: undefined,
+    producerValue: (node: SignalNode<unknown>) => node.value,
   };
 })();
 
 function signalValueChanged<T>(node: SignalNode<T>): void {
   node.version++;
   producerIncrementEpoch();
-  producerNotifyConsumers(node);
-  postSignalSetFn?.();
+  const endBatch = beginBatch();
+  let queueError;
+  try {
+    producerNotifyConsumers(node);
+    postSignalSetFn?.();
+  } finally {
+    queueError = endBatch();
+  }
+  if (queueError) {
+    throw queueError.error;
+  }
 }
