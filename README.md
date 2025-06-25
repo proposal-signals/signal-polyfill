@@ -4,7 +4,7 @@
 
 A "signal" is [a proposed first-class JavaScript data type](https://github.com/tc39/proposal-signals) that enables one-way data flow through cells of state or computations derived from other state/computations.
 
-This is a polyfill for the `Signal` API.
+This is a polyfill for the `Signal` API. Unlike other tc39 polyfills, it does not alter or expose any globals.
 
 ## Examples
 
