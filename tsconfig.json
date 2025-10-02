@@ -14,7 +14,8 @@
     "strict": true,
     "composite": true,
     "forceConsistentCasingInFileNames": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true
   },
   "exclude": ["**/node_modules/**", "**/*.spec.ts", "**/dist/**/*"],
   "include": ["src"]
