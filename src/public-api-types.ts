@@ -3,7 +3,7 @@
  * and that we double-check what we're exposing as public API
  */
 import {expectTypeOf} from 'expect-type';
-import {Signal} from './wrapper.ts';
+import {Signal} from '.';
 
 /**
  * Top-Level
@@ -69,8 +69,8 @@ expectTypeOf(Signal.Computed<number>).toBeConstructibleWith(() => 1, {
 /**
  * Properties on each of the instances / namespaces
  */
-expectTypeOf<keyof Signal.State<unknown> & string>().toEqualTypeOf<'get' | 'set'>();
-expectTypeOf<keyof Signal.Computed<unknown> & string>().toEqualTypeOf<'get'>();
+expectTypeOf<keyof Signal.State<unknown>>().toEqualTypeOf<'get' | 'set'>();
+expectTypeOf<keyof Signal.Computed<unknown>>().toEqualTypeOf<'get'>();
 expectTypeOf<keyof typeof Signal.subtle>().toEqualTypeOf<
   | 'untrack'
   | 'currentComputed'
@@ -83,9 +83,7 @@ expectTypeOf<keyof typeof Signal.subtle>().toEqualTypeOf<
   | 'unwatched'
 >();
 
-expectTypeOf<keyof Signal.subtle.Watcher & string>().toEqualTypeOf<
-  'watch' | 'unwatch' | 'getPending'
->();
+expectTypeOf<keyof Signal.subtle.Watcher>().toEqualTypeOf<'watch' | 'unwatch' | 'getPending'>();
 
 /**
  * Inference works

@@ -3,7 +3,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "pretty": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "module": "ESNext",
     "target": "ES2022",
     "sourceMap": true,

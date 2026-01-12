@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from 'vitest';
-import {Signal} from '../../../src/wrapper.js';
+import {Signal} from '../../../src';
 
 describe('watch and unwatch', () => {
   it('handles multiple watchers well', () => {
