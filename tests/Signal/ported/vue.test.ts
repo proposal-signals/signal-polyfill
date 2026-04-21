@@ -55,6 +55,22 @@ describe('Ported - Vue', () => {
     expect(c2.get()).toBe('0foo'); // ! In vue it recomputes and becomes '1foo'
   });
 
+  it('should recompute if something unrelated changes', () => {
+    const v = new Signal.State(0);
+    const unrelated = new Signal.State(1)
+    const c1 = new Signal.Computed(() => {
+      if (v.get() === 0) {
+        v.set(1);
+      }
+      return 'foo';
+    });
+    const c2 = new Signal.Computed(() => v.get() + c1.get());
+    expect(c2.get()).toBe('0foo');
+    expect(c2.get()).toBe('0foo'); // ! In vue it recomputes and becomes '1foo'
+    unrelated.set(2);
+    expect(c2.get()).toBe('1foo'); // we recompute, even though `unrelated` has nothing to do with `c2`
+  });
+
   // https://github.com/vuejs/core/blob/main/packages/reactivity/__tests__/computed.spec.ts#L925
   it('should be recomputed without being affected by side effects', () => {
     const v = new Signal.State(0);
