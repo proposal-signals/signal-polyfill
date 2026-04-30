@@ -190,4 +190,43 @@ describe('watch and unwatch', () => {
       watcher.watch();
     }
   });
+  it('unwatches and re-watches when a dependency appears at a different place', () => {
+    const s1 = new Signal.State(0);
+    let s2w = 0;
+    let s2u = 0;
+    const s2 = new Signal.State(0, {
+      [Signal.subtle.watched]: () => s2w++,
+      [Signal.subtle.unwatched]: () => s2u++
+    });
+    const s3 = new Signal.State(0, {
+      [Signal.subtle.watched]: () => s3w++,
+      [Signal.subtle.unwatched]: () => s3u++
+    });
+    let s3w = 0;
+    let s3u = 0;
+    const c = new Signal.Computed(() => {
+      if(s1.get() < 1) {
+        return s2.get() + s3.get();
+      } else {
+        return s3.get() + s2.get();
+      }
+    });
+    const w = new Signal.subtle.Watcher(() => {});
+    w.watch(c);
+
+    c.get();
+    expect(s2w).toBe(1);
+    expect(s2u).toBe(0);
+    expect(s3w).toBe(1);
+    expect(s3u).toBe(0);
+
+    s1.set(3); // this tiggers the 'else' branch, in which the order of the
+    // dependencies is reversed
+    c.get();
+
+    expect(s2w).toBe(2);
+    expect(s2u).toBe(1); // it unwatched and re-watched s2
+    expect(s3w).toBe(1);
+    expect(s3u).toBe(0);
+  })
 });
