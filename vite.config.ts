@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [dts()],
   build: {
     minify: false,
+    target: 'es2022',
     lib: {
       entry,
       formats: ['es'],
