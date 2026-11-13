@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1739484066887,
+  "lastUpdate": 1794606492617,
   "repoUrl": "https://github.com/proposal-signals/signal-polyfill",
   "entries": {
     "Benchmarks": [
@@ -536,6 +536,185 @@ window.BENCHMARK_DATA = {
           {
             "name": "5x500 - 3 sources (deep)",
             "value": 575.7529299999878,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "199018+NullVoxPopuli@users.noreply.github.com",
+            "name": "NullVoxPopuli",
+            "username": "NullVoxPopuli"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "419e6720f3cb6363afa626c9b391ba4ce24db3f4",
+          "message": "Merge pull request #64 from jcannon98188/build-target-es2022\n\nBuild with target es2022 so private-brand checks stay native",
+          "timestamp": "2026-11-13T16:45:15-05:00",
+          "tree_id": "599914d7eba0ee358587316d7c0453151472d553",
+          "url": "https://github.com/proposal-signals/signal-polyfill/commit/419e6720f3cb6363afa626c9b391ba4ce24db3f4"
+        },
+        "date": 1794606491987,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "avoidablePropagation",
+            "value": 1326.0096439999998,
+            "unit": "ms"
+          },
+          {
+            "name": "broadPropagation",
+            "value": 1522.797760999998,
+            "unit": "ms"
+          },
+          {
+            "name": "deepPropagation",
+            "value": 446.05726100000174,
+            "unit": "ms"
+          },
+          {
+            "name": "diamond",
+            "value": 1322.8298050000012,
+            "unit": "ms"
+          },
+          {
+            "name": "mux",
+            "value": 874.6707160000005,
+            "unit": "ms"
+          },
+          {
+            "name": "repeatedObservers",
+            "value": 318.48396499999944,
+            "unit": "ms"
+          },
+          {
+            "name": "triangle",
+            "value": 426.47951399999874,
+            "unit": "ms"
+          },
+          {
+            "name": "unstable",
+            "value": 1009.1575410000078,
+            "unit": "ms"
+          },
+          {
+            "name": "molBench",
+            "value": 671.1265620000049,
+            "unit": "ms"
+          },
+          {
+            "name": "createDataSignals",
+            "value": 20.303467999998247,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations0to1",
+            "value": 9.946676999999909,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to1",
+            "value": 7.229495999999926,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations2to1",
+            "value": 5.913985999999568,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations4to1",
+            "value": 6.6940990000002785,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1000to1",
+            "value": 2.757366000005277,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to2",
+            "value": 14.43050800000492,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to4",
+            "value": 10.50010900000052,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to8",
+            "value": 11.450288000007276,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to1000",
+            "value": 6.823198999991291,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to1",
+            "value": 23.70596600000863,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations2to1",
+            "value": 16.99483599999803,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations4to1",
+            "value": 9.702040999996825,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1000to1",
+            "value": 2.7689379999937955,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to2",
+            "value": 12.670570999995107,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to4",
+            "value": 7.885647999995854,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to1000",
+            "value": 2.4397449999960372,
+            "unit": "ms"
+          },
+          {
+            "name": "10x5 - 2 sources - read 20% (simple component)",
+            "value": 1712.7649920000113,
+            "unit": "ms"
+          },
+          {
+            "name": "10x10 - 6 sources - dynamic - read 20% (dynamic component)",
+            "value": 743.232799999998,
+            "unit": "ms"
+          },
+          {
+            "name": "1000x12 - 4 sources - dynamic (large web app)",
+            "value": 15442.927932999999,
+            "unit": "ms"
+          },
+          {
+            "name": "1000x5 - 25 sources (wide dense)",
+            "value": 10139.515205999982,
+            "unit": "ms"
+          },
+          {
+            "name": "5x500 - 3 sources (deep)",
+            "value": 543.5766259999946,
             "unit": "ms"
           }
         ]
