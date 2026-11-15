@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794606492617,
+  "lastUpdate": 1794753523854,
   "repoUrl": "https://github.com/proposal-signals/signal-polyfill",
   "entries": {
     "Benchmarks": [
@@ -715,6 +715,185 @@ window.BENCHMARK_DATA = {
           {
             "name": "5x500 - 3 sources (deep)",
             "value": 543.5766259999946,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "199018+NullVoxPopuli@users.noreply.github.com",
+            "name": "NullVoxPopuli",
+            "username": "NullVoxPopuli"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1affde658153c398cc1593a8e6db9c8f094c9a99",
+          "message": "Merge pull request #65 from proposal-signals/nvp/release-plan\n\nUpdate release-plan for use with Trusted Publishing",
+          "timestamp": "2026-11-15T09:36:32-05:00",
+          "tree_id": "0f41b01671d702c72b2ed634e72b28430b69ae76",
+          "url": "https://github.com/proposal-signals/signal-polyfill/commit/1affde658153c398cc1593a8e6db9c8f094c9a99"
+        },
+        "date": 1794753523521,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "avoidablePropagation",
+            "value": 802.916545,
+            "unit": "ms"
+          },
+          {
+            "name": "broadPropagation",
+            "value": 946.59195,
+            "unit": "ms"
+          },
+          {
+            "name": "deepPropagation",
+            "value": 296.99908700000015,
+            "unit": "ms"
+          },
+          {
+            "name": "diamond",
+            "value": 811.3689510000004,
+            "unit": "ms"
+          },
+          {
+            "name": "mux",
+            "value": 569.5760540000047,
+            "unit": "ms"
+          },
+          {
+            "name": "repeatedObservers",
+            "value": 216.78955299999507,
+            "unit": "ms"
+          },
+          {
+            "name": "triangle",
+            "value": 283.424325999993,
+            "unit": "ms"
+          },
+          {
+            "name": "unstable",
+            "value": 655.780283,
+            "unit": "ms"
+          },
+          {
+            "name": "molBench",
+            "value": 421.93103999999585,
+            "unit": "ms"
+          },
+          {
+            "name": "createDataSignals",
+            "value": 16.360091999995348,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations0to1",
+            "value": 7.559047000002465,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to1",
+            "value": 7.885599999994156,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations2to1",
+            "value": 5.130944000004092,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations4to1",
+            "value": 5.63396400000056,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1000to1",
+            "value": 3.7840720000021975,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to2",
+            "value": 10.775166999999783,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to4",
+            "value": 8.243838000002143,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to8",
+            "value": 7.985894999997981,
+            "unit": "ms"
+          },
+          {
+            "name": "createComputations1to1000",
+            "value": 6.966872999997577,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to1",
+            "value": 14.523576999999932,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations2to1",
+            "value": 9.94147299999895,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations4to1",
+            "value": 6.886760000001232,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1000to1",
+            "value": 2.4603399999978137,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to2",
+            "value": 8.506448000000091,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to4",
+            "value": 6.930785000004107,
+            "unit": "ms"
+          },
+          {
+            "name": "updateComputations1to1000",
+            "value": 2.1149159999986296,
+            "unit": "ms"
+          },
+          {
+            "name": "10x5 - 2 sources - read 20% (simple component)",
+            "value": 1189.5181499999962,
+            "unit": "ms"
+          },
+          {
+            "name": "10x10 - 6 sources - dynamic - read 20% (dynamic component)",
+            "value": 514.110732000001,
+            "unit": "ms"
+          },
+          {
+            "name": "1000x12 - 4 sources - dynamic (large web app)",
+            "value": 12385.756131000002,
+            "unit": "ms"
+          },
+          {
+            "name": "1000x5 - 25 sources (wide dense)",
+            "value": 7718.491481000005,
+            "unit": "ms"
+          },
+          {
+            "name": "5x500 - 3 sources (deep)",
+            "value": 430.8193809999939,
             "unit": "ms"
           }
         ]
