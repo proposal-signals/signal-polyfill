@@ -52,7 +52,7 @@ describe('Ported - Vue', () => {
     });
     const c2 = new Signal.Computed(() => v.get() + c1.get());
     expect(c2.get()).toBe('0foo');
-    expect(c2.get()).toBe('0foo'); // ! In vue it recomputes and becomes '1foo'
+    expect(c2.get()).toBe('1foo');
   });
 
   // https://github.com/vuejs/core/blob/main/packages/reactivity/__tests__/computed.spec.ts#L925
@@ -68,6 +68,6 @@ describe('Ported - Vue', () => {
 
     expect(c2.get()).toBe('0,0');
     v.set(1);
-    expect(c2.get()).toBe('0,0'); // ! In vue it recomputes and becomes '1,0'
+    expect(c2.get()).toBe('1,0');
   });
 });
