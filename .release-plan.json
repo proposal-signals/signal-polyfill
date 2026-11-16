@@ -2,8 +2,9 @@
   "solution": {
     "signal-polyfill": {
       "impact": "patch",
-      "oldVersion": "0.2.1",
-      "newVersion": "0.2.2",
+      "oldVersion": "0.2.2",
+      "newVersion": "0.2.3",
+      "tagName": "latest",
       "constraints": [
         {
           "impact": "patch",
@@ -17,5 +18,5 @@
       "pkgJSONPath": "./package.json"
     }
   },
-  "description": "## Release (2025-01-17)\n\nsignal-polyfill 0.2.2 (patch)\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#42](https://github.com/proposal-signals/signal-polyfill/pull/42) fix assignment of subtypes (#7) ([@Gvozd](https://github.com/Gvozd))\n  * [#45](https://github.com/proposal-signals/signal-polyfill/pull/45) fix isState / isComputed guards to allow all parameter types ([@fcrozatier](https://github.com/fcrozatier))\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#37](https://github.com/proposal-signals/signal-polyfill/pull/37) Add type-tests to ensure consistent public API expectations ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 3\n- Frédéric Crozatier ([@fcrozatier](https://github.com/fcrozatier))\n- Gvozd ([@Gvozd](https://github.com/Gvozd))\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+  "description": "## Release (2026-11-16)\n\n* signal-polyfill 0.2.3 (patch)\n\n#### :bug: Bug Fix\n* `signal-polyfill`\n  * [#64](https://github.com/proposal-signals/signal-polyfill/pull/64) Build with target es2022 so private-brand checks stay native ([@jcannon98188](https://github.com/jcannon98188))\n\n#### :house: Internal\n* `signal-polyfill`\n  * [#65](https://github.com/proposal-signals/signal-polyfill/pull/65) Update release-plan for use with Trusted Publishing ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#40](https://github.com/proposal-signals/signal-polyfill/pull/40) Port tests from different signal implementations ([@omfj](https://github.com/omfj))\n  * [#49](https://github.com/proposal-signals/signal-polyfill/pull/49) Add PR Comment for bench ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#47](https://github.com/proposal-signals/signal-polyfill/pull/47) Benchmarks from js-reactivity-benchmark in CI ([@divdavem](https://github.com/divdavem))\n\n#### Committers: 4\n- Ole Magnus ([@omfj](https://github.com/omfj))\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n- [@divdavem](https://github.com/divdavem)\n- [@jcannon98188](https://github.com/jcannon98188)\n"
 }
