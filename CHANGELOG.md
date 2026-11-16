@@ -1,5 +1,26 @@
 # Changelog
 
+## Release (2026-11-16)
+
+* signal-polyfill 0.2.3 (patch)
+
+#### :bug: Bug Fix
+* `signal-polyfill`
+  * [#64](https://github.com/proposal-signals/signal-polyfill/pull/64) Build with target es2022 so private-brand checks stay native ([@jcannon98188](https://github.com/jcannon98188))
+
+#### :house: Internal
+* `signal-polyfill`
+  * [#65](https://github.com/proposal-signals/signal-polyfill/pull/65) Update release-plan for use with Trusted Publishing ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#40](https://github.com/proposal-signals/signal-polyfill/pull/40) Port tests from different signal implementations ([@omfj](https://github.com/omfj))
+  * [#49](https://github.com/proposal-signals/signal-polyfill/pull/49) Add PR Comment for bench ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#47](https://github.com/proposal-signals/signal-polyfill/pull/47) Benchmarks from js-reactivity-benchmark in CI ([@divdavem](https://github.com/divdavem))
+
+#### Committers: 4
+- Ole Magnus ([@omfj](https://github.com/omfj))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+- [@divdavem](https://github.com/divdavem)
+- [@jcannon98188](https://github.com/jcannon98188)
+
 ## Release (2025-01-17)
 
 signal-polyfill 0.2.2 (patch)
